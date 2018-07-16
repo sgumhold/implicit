@@ -1,0 +1,6 @@
+// this is the default configuration file valid for a 1400x1050 resolution
+// copy it to implicit.cfg and define your own values
+//show all
+name(main):x=4;y=30;w=800;h=600;bg_clr_idx=-1;show_stats=false;state=fullscreen(2)
+type(scene):x=808;y=30;w=592;h=600
+//type(scene):file_name="D:\Projects\project\implicit_surfaces\examples\heart.isd"
