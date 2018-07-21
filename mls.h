@@ -1,15 +1,8 @@
 #pragma once
 
-#include <cgv/math/mfunc.h>
-#include <cgv/gui/provider.h>
-#include <cgv/render/drawable.h>
-#include <cgv/base/named.h>
-#include <cgv/media/color.h>
+#include "implicit_primitive.h"
 #define ANN_USE_FLOAT
 #include <ANN/ANN.h>
-#include "scene.h"
-#include <string>
-#include <vector>
 
 using namespace std;
 using namespace cgv::math;
@@ -22,17 +15,12 @@ using namespace cgv::type;
 
 
 template <typename T, typename P = T, typename C = float>
-class mls_surface :  	
-	public v3_func<T,T>, 
-	public scene_updater,
-	public drawable,
-	public provider,
-	public named
+class mls_surface : public implicit_primitive<T>
 {
 public:
 	typedef fvec<P,3> P3d;
 	typedef fvec<P,3> V3d;
-	typedef color<C,RGB> Rgb;
+	typedef cgv::media::color<C, cgv::media::RGB> Rgb;
 private:
 	mutable P3d last_p;
 	mutable V3d last_nml;

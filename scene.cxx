@@ -1,11 +1,11 @@
 #include "scene.h"
+#include "implicit_group.h"
 #include <cgv/signal/rebind.h>
 #include <cgv/base/group.h>
 #include <cgv/gui/gui_driver.h>
 #include <cgv/utils/tokenizer.h>
 #include <cgv/utils/advanced_scan.h>
 #include <cgv/type/variant.h>
-#include "implicit_group.h"
 #include <cgv/math/qem.h>
 
 using namespace cgv::media::font;
@@ -54,13 +54,9 @@ scene_ptr ref_scene()
 
 void register_scene_factory(abst_scene_factory* _scene_factory)
 {
-	gl_implicit_surface_drawable::F* f = _scene_factory->create_function();
-	std::string s("unknown");
-	cgv::base::base* bp = dynamic_cast<cgv::base::base*>(f);
-	if (bp)
-		s = bp->get_type_name();
-	delete f;
-	std::cout << "register '" << _scene_factory->symbol << "' to " << s << std::endl;
+	base_ptr bp = _scene_factory->create_function();
+	std::cout << "register '" << _scene_factory->names << "' to " << bp->get_type_name() 
+		      << "[" << bp->get_property_declarations() << "]" << std::endl;
 	ref_scene()->register_factory(_scene_factory);
 }
 
@@ -223,13 +219,12 @@ scene::scene(const std::string& _description)
 	: description(_description),
 	  impl_draw_ptr(new gl_implicit_surface_drawable())
 {
-
-//	qem_test();
-//	exit(0);
+	name = "scene";
 
 	disable_update = false;
 	help_shown = false;
 	register_object(impl_draw_ptr);
+	impl_draw_ptr->set_function(this);
 	if (cgv::gui::get_gui_driver())
 		construct_editor();
 	else {
@@ -251,8 +246,8 @@ void scene::construct_editor()
 
 void scene::unregister()
 {
-	if (func_base_ptr)
-		unregister_object(func_base_ptr, "");
+	//if (func_base_ptr)
+//		unregister_object(func_base_ptr, "");
 	if (impl_draw_ptr)
 		unregister_object(impl_draw_ptr, "");
 }
@@ -268,38 +263,33 @@ void scene::parse_description()
 		factories[j]->init_counter();
 
 	if (func_base_ptr) {
-		unregister_object(func_base_ptr, "");
+		remove_all_children();
 		func_base_ptr.clear();
 	}
 	unsigned int i=0;
-	F* func_ptr = parse_description_recursive(i, 0);
-
-	impl_draw_ptr->set_function(func_ptr);
-
-
-	scene_updater* su_ptr = dynamic_cast<scene_updater*>(func_ptr);
-	if (su_ptr)
-		su_ptr->set_scene(this);
-
-
-	func_base_ptr = dynamic_cast<base*>(func_ptr);
-	if (func_base_ptr)
-		register_object(func_base_ptr,"");
-
+	func_base_ptr = parse_description_recursive(i, 0);
+	post_recreate_gui();
+	post_redraw();
+	if (func_base_ptr) {
+		append_child(func_base_ptr);
+		get_context()->make_current();
+		get_context()->configure_new_child(func_base_ptr);
+		impl_draw_ptr->set_function(this);
+	}
 	disable_update = false;
 }
 
 bool scene::symbol_matches_description(unsigned int i, abst_scene_factory* factory, unsigned int& offset) const
 {
-	if (factory->symbol.size() == 1) {
-		if (description[i] == factory->symbol[0]) {
+	if (factory->names.size() == 1) {
+		if (description[i] == factory->names[0]) {
 			offset = 1;
 			return true;
 		}
 		return false;
 	}
 	std::vector<cgv::utils::token> tokens;
-	cgv::utils::split_to_tokens(factory->symbol, tokens, ";,", false);
+	cgv::utils::split_to_tokens(factory->names, tokens, ";,", false);
 	for (unsigned j = 0; j < tokens.size(); ++j) {
 		std::string symbol = to_string(tokens[j]);
 		if (i + symbol.size() <= description.size())
@@ -311,19 +301,17 @@ bool scene::symbol_matches_description(unsigned int i, abst_scene_factory* facto
 	return false;
 }
 
-scene::F* scene::parse_description_recursive(unsigned int& i, group* g)
+base_ptr scene::parse_description_recursive(unsigned int& i, group* g)
 {
-	F* func_ptr = 0;
+	base_ptr bp;
 	std::string group_defs;
 	while (i < (unsigned int)description.size()) {
 		bool used_factory = false;
 		unsigned int offset = 0;
 		for (unsigned int j=0; j<factories.size(); ++j) {
 			if (symbol_matches_description(i, factories[j], offset)) {
-				func_ptr = factories[j]->create_function();
-				scene_updater* su_ptr = dynamic_cast<scene_updater*>(func_ptr);
-				if (su_ptr)
-					su_ptr->set_scene(this);
+				bp = factories[j]->create_function();
+				bp->get_interface<implicit_type>()->set_scene(this);
 				used_factory = true;
 				break;
 			}
@@ -341,8 +329,7 @@ scene::F* scene::parse_description_recursive(unsigned int& i, group* g)
 				}
 				std::string defs = description.substr(t,i-t);
 				group_defs = defs;
-				if (dynamic_cast<base*>(func_ptr))
-					dynamic_cast<base*>(func_ptr)->multi_set(defs);
+				bp->multi_set(defs);
 				break;
 			}
 		case '<' :
@@ -351,29 +338,28 @@ scene::F* scene::parse_description_recursive(unsigned int& i, group* g)
 				for (++i; i < description.size() && description[i] != '>'; ++i) {
 				}
 				std::string name = description.substr(t,i-t);
-				if (dynamic_cast<named*>(func_ptr))
-					dynamic_cast<named*>(func_ptr)->set_name(name);
+				bp->get_named()->set_name(name);
 				break;
 			}
 		case '(' :
-			if (func_ptr) {
-				group* g = dynamic_cast<group*>(func_ptr);
-				if (g) {
+			if (bp) {
+				group* new_g = bp->get_interface<group>();
+				if (new_g) {
 					++i;
-					parse_description_recursive(i, g);
+					parse_description_recursive(i, new_g);
 					if (!group_defs.empty())
-						g->multi_set(group_defs);
+						new_g->multi_set(group_defs);
 				}
 			}
 			break;
 		case ',' :
-			if (func_ptr && g)
-				g->append_child(base_ptr(dynamic_cast<base*>(func_ptr)));
+			if (bp && g)
+				g->append_child(bp);
 			break;
 		case ')' :
-			if (func_ptr && g)
-				g->append_child(base_ptr(dynamic_cast<base*>(func_ptr)));
-			return func_ptr;
+			if (bp && g)
+				g->append_child(bp);
+			return bp;
 		case '%' : 
 				for (; i<description.size(); ++i) {
 					if (description[i] == '\n')
@@ -386,14 +372,13 @@ scene::F* scene::parse_description_recursive(unsigned int& i, group* g)
 		}
 		++i;
 	}
-	return func_ptr;
+	return bp;
 }
 
 void scene::reconstruct_description()
 {
 	unsigned int i=0;
-	std::string d = reconstruct_description_recursive(i, 
-		func_base_ptr->get_interface<F>(), 0);
+	std::string d = reconstruct_description_recursive(i, func_base_ptr->get_interface<implicit_type>(), 0);
 	if (editor)
 		editor->set_text(d);
 	description = d;
@@ -405,26 +390,24 @@ void scene::show_help()
 	std::vector<char> symbols;
 	unsigned int j;
 	for (j=0; j<factories.size(); ++j) {
-		std::cout << "   " << factories[j]->symbol;
-		F* func_ptr_ref = factories[j]->create_function();
-		if (dynamic_cast<implicit_group<double>*>(func_ptr_ref))
+		std::cout << "   " << factories[j]->names;
+		base_ptr bp = factories[j]->create_function();
+		if (bp->get_group())
 			std::cout << "()";
 		else
 			std::cout << "  ";
 		std::cout << " ... ";
-		std::cout << dynamic_cast<base*>(func_ptr_ref)->get_type_name() << std::endl;
-		delete func_ptr_ref;
+		std::cout << bp->get_type_name()
+			      << "[" << bp->get_property_declarations() << "]" << std::endl;
 	}
 	std::cout << std::endl;
 }
 
 
-std::string scene::get_changed_values(F* fp, F* fp_ref) const
+std::string scene::get_changed_values(implicit_type* fp, implicit_type* fp_ref) const
 {
-	base* bp = dynamic_cast<base*>(fp);
-	if (!bp)
-		return "";
-	base* bp_ref = dynamic_cast<base*>(fp_ref);
+	base* bp = fp->get_base();
+	base* bp_ref = fp_ref->get_base();
 
 	std::string decs;
 	std::string prop_decs = bp->get_property_declarations();
@@ -470,15 +453,16 @@ std::string scene::get_changed_values(F* fp, F* fp_ref) const
 	return decs;
 }
 
-std::string scene::reconstruct_description_recursive(unsigned int& i, F* func_ptr, group* g)
+std::string scene::reconstruct_description_recursive(unsigned int& i, implicit_type* func_ptr, group* g)
 {
-	F* func_ptr_ref = 0;
+	cgv::base::base_ptr bp_ref;
+//	implicit_type* func_ptr_ref = 0;
 	std::string desc;
 	unsigned int i0 = i;
 	unsigned int ci = 0;
 	if (g) {
 		if (g->get_nr_children() > 0)
-			func_ptr = g->get_child(ci)->get_interface<F>();
+			func_ptr = g->get_child(ci)->get_interface<implicit_type>();
 		else
 			func_ptr = 0;
 	}
@@ -487,7 +471,7 @@ std::string scene::reconstruct_description_recursive(unsigned int& i, F* func_pt
 		unsigned offset = 0;
 		for (unsigned int j=0; j<factories.size(); ++j) {
 			if (symbol_matches_description(i, factories[j], offset)) {
-				func_ptr_ref = factories[j]->create_function();
+				bp_ref = factories[j]->create_function();
 				used_factory = true;
 				break;
 			}
@@ -506,9 +490,9 @@ std::string scene::reconstruct_description_recursive(unsigned int& i, F* func_pt
 				}
 				i0 = i;
 				if (g)
-					desc += get_changed_values(g->get_child(ci)->get_interface<F>(), func_ptr_ref);
+					desc += get_changed_values(g->get_child(ci)->get_interface<implicit_type>(), bp_ref->get_interface<implicit_type>());
 				else
-					desc += get_changed_values(func_ptr, func_ptr_ref);
+					desc += get_changed_values(func_ptr, bp_ref->get_interface<implicit_type>());
 				break;
 			}
 		case '<' :
@@ -532,16 +516,12 @@ std::string scene::reconstruct_description_recursive(unsigned int& i, F* func_pt
 		case ',' :
 			++ci;
 			if (g && g->get_nr_children() > ci)
-				func_ptr = g->get_child(ci)->get_interface<F>();
+				func_ptr = g->get_child(ci)->get_interface<implicit_type>();
 			else
 				func_ptr = 0;
-			if (func_ptr_ref)
-				delete func_ptr_ref;
-			func_ptr_ref = 0;
+			bp_ref = 0;
 			break;
 		case ')' :
-			if (func_ptr_ref)
-				delete func_ptr_ref;
 			return desc + description.substr(i0,i-i0);
 		default:
 			++i;
@@ -549,8 +529,6 @@ std::string scene::reconstruct_description_recursive(unsigned int& i, F* func_pt
 		}
 		++i;
 	}
-	if (func_ptr_ref)
-		delete func_ptr_ref;
 	return desc + description.substr(i0,i-i0);
 }
 
@@ -582,6 +560,30 @@ void scene::update_description()
 std::string scene::get_type_name() const 
 {
 	return "scene"; 
+}
+
+/// cast evaluation to func_base_ptr
+double scene::evaluate(const pnt_type& p) const
+{
+	if (func_base_ptr)
+		return func_base_ptr->get_interface<implicit_type>()->evaluate(&p(0));
+	return 0;
+}
+
+/// cast gradient evaluation to func_base_ptr
+scene::vec_type scene::evaluate_gradient(const pnt_type& p) const
+{
+	if (func_base_ptr)
+		return func_base_ptr->get_interface<implicit_type>()->evaluate_gradient(&p(0)).to_vec();
+	return vec_type(0, 0, 0);
+}
+
+///
+void scene::create_gui()
+{
+	add_decorator("scene", "heading");
+	if (func_base_ptr)
+		inline_object_gui(func_base_ptr);
 }
 
 scene_updater::scene_updater() : s(0) 

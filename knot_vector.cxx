@@ -30,7 +30,8 @@ bool knot_vector<T>::self_reflect(cgv::reflect::reflection_handler& rh)
 
 	// reflect statically allocated members
 	bool do_continue =
-		rh.reflect_member("n", n);
+		rh.reflect_member("n", n) &&
+		implicit_primitive<T>::self_reflect(rh);
 
 	// ensure dynamic allocation of points
 	if (rh.is_creative()) {

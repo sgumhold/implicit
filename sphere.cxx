@@ -1,15 +1,13 @@
-#include "scene.h"
-#include <cgv/base/named.h>
+#include "implicit_primitive.h"
 
 template <typename T>
-struct sphere : 
-	public cgv::math::v3_func<T,T>, 
-	public cgv::gui::provider,
-	public scene_updater,
-	public cgv::base::named
+struct sphere : public implicit_primitive<T>
 {
 	bool use_euclidean_distance;
-	sphere():use_euclidean_distance(true) {}
+	sphere() : use_euclidean_distance(true) 
+	{
+		gui_color = 0xFF8888;
+	}
 	std::string get_type_name() const { return "sphere"; }
 	/// evaluate the implicit function itself, this must be overloaded
 	T evaluate(const pnt_type& p) const {
@@ -28,10 +26,8 @@ struct sphere :
 		else
 			return T(2) * p;
 	}
-	void on_set(void* member_ptr) { update_scene(); }
 	void create_gui()
 	{
-		add_view("sphere",name)->set("color",0xFF8888);
 		add_member_control(this, "use_euclidean_distance", use_euclidean_distance, "check");
 	}
 };

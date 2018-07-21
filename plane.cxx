@@ -1,26 +1,14 @@
-#include <cgv/math/mfunc.h>
-#include <cgv/gui/provider.h>
-#include <cgv/base/named.h>
-#include "scene.h"
-
-using namespace cgv::math;
-using namespace cgv::base;
-using namespace cgv::gui;
+#include "implicit_primitive.h"
 
 template <typename T>
-struct plane : 
-	public v3_func<T,T>, 
-	public provider,
-	public scene_updater,
-	public named
+struct plane : public implicit_primitive<T>
 {
-	/// use this type to avoid allocation on the heap
-	typedef cgv::math::fvec<double, 3> fvec_type;
-
-	fvec_type normal;
+	vec_type normal;
 	double   distance;
 
-	plane() : normal(0, 0, 1), distance(0) {}
+	plane() : normal(0, 0, 1), distance(0) {
+		gui_color = 0xFF8888;
+	}
 
 	bool self_reflect(cgv::reflect::reflection_handler& rh)
 	{
@@ -28,7 +16,8 @@ struct plane :
 			rh.reflect_member("d", distance) &&
 			rh.reflect_member("nx", normal(0)) &&
 			rh.reflect_member("ny", normal(1)) &&
-			rh.reflect_member("nz", normal(2));
+			rh.reflect_member("nz", normal(2)) &&
+			implicit_primitive<T>::self_reflect(rh);
 	}
 
 	void on_set(void* member_ptr)
@@ -39,14 +28,11 @@ struct plane :
 	std::string get_type_name() const { return "plane"; }
 	/// evaluate the implicit function itself, this must be overloaded
 	T evaluate(const pnt_type& p) const {
-		return dot(p, normal.to_vec()) - distance;
+		return dot(p, normal) - distance;
 	}
-	vec_type evaluate_gradient(const pnt_type& p) const {
-		return normal.to_vec();
-	}
+	vec_type evaluate_gradient(const pnt_type& p) const { return normal; }
 	void create_gui()
 	{
-		add_view("plane",name)->set("color",0xFF8888);
 		add_gui("normal", normal, "direction", "options='min=-1;max=1;ticks=true'");
 		add_member_control(this, "distance", distance, "value_slider", "min=-2;max=2;ticks=true");
 	}

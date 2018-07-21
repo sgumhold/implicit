@@ -1,13 +1,7 @@
-#include <cgv/base/named.h>
-#include "scene.h"
-
-using namespace cgv::math;
-using namespace cgv::base;
+#include "implicit_primitive.h"
 
 template <typename T>
-struct heart : 
-	public v3_func<T,T>, 
-	public named
+struct heart : public implicit_primitive<T>
 {
 public:
 	std::string get_type_name() const { return "heart"; }

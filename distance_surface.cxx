@@ -60,6 +60,7 @@ bool distance_surface<T>::self_reflect(cgv::reflect::reflection_handler& rh)
 		skeleton<T>::self_reflect(rh) &&
 		rh.reflect_member("r", r);
 }
+
 template <typename T>
 void distance_surface<T>::append_edge_callback(size_t ei)
 {

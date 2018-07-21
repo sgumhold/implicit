@@ -1,19 +1,12 @@
 #pragma once
 
-#include "scene.h"
-#include <cgv/math/mfunc.h>
-#include <cgv/render/drawable.h>
-#include <cgv/base/named.h>
+#include "implicit_primitive.h"
 
 /** the knot_vector class manages a vector of knot locations and provides callbacks
     in case that points are changed or appended. This is the base class for meta balls
 	and skeletons.*/
 template <typename T>
-class knot_vector : 
-	public cgv::math::v3_func<T,T>, 
-	public scene_updater,
-	public cgv::gui::provider,
-	public cgv::base::named
+class knot_vector : public implicit_primitive<T>
 {
 protected:
 	// vector of knot locations

@@ -1,21 +1,25 @@
 #pragma once
 
+#include <cgv/base/base.h>
+#include <cgv/gui/text_editor.h>
 #include <cgv/render/drawable.h>
 #include <cgv/gui/provider.h>
 #include <cgv/base/register.h>
 #include <cgv/utils/convert_string.h>
 #include "gl_implicit_surface_drawable.h"
-#include <cgv/gui/text_editor.h>
 
 using namespace cgv::render;
 using namespace cgv::gui;
 using namespace cgv::base;
 
+template <typename T>
+class implicit_base;
+
 struct abst_scene_factory
 {
-	std::string symbol;
+	std::string names;
 	virtual void init_counter() = 0;
-	virtual gl_implicit_surface_drawable::F* create_function() = 0;
+	virtual base_ptr create_function() = 0;
 };
 
 extern void register_scene_factory(abst_scene_factory* _scene_factory);
@@ -31,23 +35,20 @@ struct scene_factory : public abst_scene_factory
 		static std::string base_name;
 		return base_name;
 	}
-	scene_factory(const std::string& _symbol, const std::string& base_name = "") {
-		symbol = _symbol;
+	scene_factory(const std::string& _names, const std::string& base_name = "") {
+		names = _names;
 		ref_base_name() = base_name;
 		if (base_name.empty()) {
 			T dummy;
-			if (dynamic_cast<base*>(&dummy))
-				ref_base_name() = dynamic_cast<base*>(&dummy)->get_type_name();
+			ref_base_name() = dummy.get_base()->get_type_name();
 		}
 	}
 	void init_counter() {
 		ref_counter() = 1;
 	}
-	gl_implicit_surface_drawable::F* create_function() {
-		gl_implicit_surface_drawable::F* f = new T;
-		if (dynamic_cast<named*>(f))
-			dynamic_cast<named*>(f)->set_name(ref_base_name()+"_"+
-			cgv::utils::to_string(ref_counter()));
+	base_ptr create_function() {
+		T* f = new T;
+		f->set_name(ref_base_name() + "_" + cgv::utils::to_string(ref_counter()));
 		++ref_counter();
 		return f;
 	};
@@ -59,18 +60,17 @@ struct scene_factory : public abst_scene_factory
 template <typename T>
 struct scene_factory_registration
 {
-	scene_factory_registration(char _symbol, const std::string& _base_name = "") {
-		register_scene_factory(new scene_factory<T>(std::string(1,_symbol), _base_name));
-	}
-	scene_factory_registration(const std::string& _symbol, const std::string& _base_name = "") {
-		register_scene_factory(new scene_factory<T>(_symbol, _base_name));
+	scene_factory_registration(const std::string& _names, const std::string& _base_name = "") {
+		register_scene_factory(new scene_factory<T>(_names, _base_name));
 	}
 };
 
 ///
-class scene : 
-	public base, 
-	public drawable, 
+class scene :
+	public group,
+	public gl_implicit_surface_drawable::F,
+	public drawable,
+	public provider,
 	public text_editor_callback_handler
 {
 private:
@@ -106,8 +106,8 @@ protected:
 	/// update the style starting from text_pos. The text is unchanged after text_pos + min_nr_checked. Return the number of changed style characters. The default implementation does nothing, such that style A is kept for all characters and returns 0
 	void update_style(int text_pos, int min_nr_checked);
 public:
-	/// type of the function describing the implicit surface
-	typedef gl_implicit_surface_drawable::F F;
+	/// type of implicits
+	typedef implicit_base<double> implicit_type;
 	/// pointer to implicit surface drawable
 	gl_implicit_surface_drawable_ptr impl_draw_ptr;
 	/// pointer to current function
@@ -115,13 +115,13 @@ public:
 	/// current scene description
 	std::string description;
 
-	std::string get_changed_values(F* fp, F* fp_ref) const;
+	std::string get_changed_values(implicit_type* fp, implicit_type* fp_ref) const;
 	void reconstruct_description();
-	std::string reconstruct_description_recursive(unsigned int& i, F* func_ptr, group* g);
+	std::string reconstruct_description_recursive(unsigned int& i, implicit_type* func_ptr, group* g);
 	/// check if factory's symbol[s] match location i in description
 	bool symbol_matches_description(unsigned int i, abst_scene_factory* factory, unsigned int& offset) const;
 	/// recursive part of the scene description parsing
-	F* parse_description_recursive(unsigned int& i, group* g);
+	base_ptr parse_description_recursive(unsigned int& i, group* g);
 	/// parse a scene description and construct a function pointer
 	void parse_description();
 	/// callback for functions that update the scene based on gui interaction
@@ -136,6 +136,12 @@ public:
 	void unregister();
 	/// overload to return the type name of this object
 	std::string get_type_name() const;
+	///
+	void create_gui();
+	/// cast evaluation to func_base_ptr
+	double evaluate(const pnt_type& p) const;
+	/// cast gradient evaluation to func_base_ptr
+	vec_type evaluate_gradient(const pnt_type& p) const;
 };
 
 /** interface for function implementations that change the

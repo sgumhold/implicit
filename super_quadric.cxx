@@ -1,19 +1,7 @@
-#include <cgv/reflect/reflection_handler.h>
-#include <cgv/base/named.h>
-#include "scene.h"
-
-using namespace cgv::math;
-using namespace cgv::signal;
-using namespace cgv::gui;
-using namespace cgv::type;
-
+#include "implicit_primitive.h"
 
 template <typename T>
-struct super_quadric : 
-	public v3_func<T,T>, 
-	public scene_updater,
-	public provider,
-	public named
+struct super_quadric : public implicit_primitive<T>
 {
 	/// the two parameters of the super quadric defining the norm
 	T p1, p2;
@@ -23,13 +11,15 @@ struct super_quadric :
 	super_quadric() {
 		p1 = p2 = 2; 
 		inv_p1 = inv_p2 = T(0.5);
+		gui_color = 0xFF8888;
 	}
 	/// reflect members to expose them to serialization
 	bool self_reflect(cgv::reflect::reflection_handler& rh)
 	{
 		return
 			rh.reflect_member("p1", p1) &&
-			rh.reflect_member("p2", p2);
+			rh.reflect_member("p2", p2) &&
+			implicit_primitive<T>::self_reflect(rh);
 	}
 	/// ensure that reciprocals are computed and that scene is updated if parameters change
 	void on_set(void* member_ptr)
@@ -38,7 +28,7 @@ struct super_quadric :
 			inv_p1 = (p1 < 1e-12) ? 1e12 : 1 / p1;
 		if (member_ptr == &p2)
 			inv_p2 = (p2 < 1e-12) ? 1e12 : 1 / p2;
-		update_scene();
+		implicit_primitive<T>::on_set(member_ptr);
 	}
 	/// helper function
 	static T signum(const T& v)
@@ -67,7 +57,6 @@ struct super_quadric :
 
 	void create_gui()
 	{
-		add_view("superquadric",name)->set("color",0xFF8888);
 		add_member_control(this, "p1", p1, "value_slider", "min=0;max=50;ticks=true;log=true");
 		add_member_control(this, "p2", p2, "value_slider", "min=0;max=50;ticks=true;log=true");
 	}

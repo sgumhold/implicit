@@ -1,14 +1,7 @@
-#include "scene.h"
-#include <cgv/base/named.h>
-
-#define sqr(x) ((x)*(x))
+#include "implicit_primitive.h"
 
 template <typename T>
-struct box : 
-	public cgv::math::v3_func<T,T>, 
-	public cgv::gui::provider,
-	public scene_updater,
-	public cgv::base::named
+struct box : public implicit_primitive<T>
 {
 	bool use_euclidean_distance;
 	box() : use_euclidean_distance(true) {}
@@ -102,7 +95,7 @@ struct box :
 	}
 	void create_gui()
 	{
-		add_view("box",name)->set("color",0xFF8888);
+		implicit_primitive<T>::create_gui();
 		add_member_control(this, "use_euclidean_distance", use_euclidean_distance, "check");
 	}
 };

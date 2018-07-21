@@ -1,5 +1,4 @@
 #include "distance_surface.h"
-#include "scene.h"
 
 template <typename T>
 class convolution_surface :  public distance_surface<T>

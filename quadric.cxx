@@ -1,20 +1,7 @@
-#include <cgv/reflect/reflection_handler.h>
-#include <cgv/base/named.h>
-#include "scene.h"
-
-using namespace cgv::math;
-using namespace cgv::signal;
-using namespace cgv::gui;
-using namespace cgv::type;
-
-#define sqr(x) ((x)*(x))
+#include "implicit_primitive.h"
 
 template <typename T>
-struct quadric : 
-	public v3_func<T,T>, 
-	public scene_updater,
-	public provider,
-	public named
+struct quadric : public implicit_primitive<T>
 {
 	T a_xx, a_xy, a_xz, a_xw, 
 		     a_yy, a_yz, a_yw, 
@@ -24,6 +11,7 @@ struct quadric :
 		a_xx = a_yy = a_zz = 1;
 		a_xy = a_xz = a_yz = a_xw = a_yw = a_zw = 0;
 		a_ww = -1;
+		gui_color = 0xFF8888;
 	}
 	/// reflect members to expose them to serialization
 	bool self_reflect(cgv::reflect::reflection_handler& rh)
@@ -38,11 +26,8 @@ struct quadric :
 			rh.reflect_member("a_yw", a_yw) &&
 			rh.reflect_member("a_zz", a_zz) &&
 			rh.reflect_member("a_zw", a_zw) &&
-			rh.reflect_member("a_ww", a_ww);
-	}
-	/// ensure that scene is updated if parameters change
-	void on_set(void* member_ptr) {
-		update_scene();
+			rh.reflect_member("a_ww", a_ww) &&
+			implicit_primitive<T>::self_reflect(rh);
 	}
 	/// overload to return the type name of this object
 	std::string get_type_name() const
@@ -59,7 +44,6 @@ struct quadric :
 	}
 	void create_gui()
 	{
-		add_view("quadric",name)->set("color",0xFF8888);
 		add_member_control(this, "a_xx", a_xx, "value_slider", "min=-5;max=5;ticks=true;log=true");
 		add_member_control(this, "a_yy", a_yy, "value_slider", "min=-5;max=5;ticks=true;log=true");
 		add_member_control(this, "a_zz", a_zz, "value_slider", "min=-5;max=5;ticks=true;log=true");

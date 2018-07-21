@@ -18,6 +18,7 @@ mls_surface<T,P,C>::mls_surface()
 	extent = 1;
 	ann = 0;
 	skip_eval = false;
+	gui_color = 0xFF8888;
 }
 
 template <typename T, typename P, typename C>
@@ -42,7 +43,6 @@ void mls_surface<T,P,C>::build_ann()
 	extent = box.get_extent().length();
 	update_member(&extent);
 	ann = new ANNkd_tree(pa,points.size(),3);
-//	delete [] pa;
 }
 
 template <typename T, typename P, typename C>
@@ -97,7 +97,8 @@ bool mls_surface<T,P,C>::self_reflect(reflection_handler& rh)
 		rh.reflect_member("show_points", show_points) &&
 		rh.reflect_member("skip_eval", skip_eval) &&
 		rh.reflect_member("point_size", point_size) &&
-		rh.reflect_member("file_name", file_name);
+		rh.reflect_member("file_name", file_name) &&
+		implicit_primitive<T>::self_reflect(rh);
 }
 
 template <typename T, typename P, typename C>
@@ -105,13 +106,13 @@ void mls_surface<T,P,C>::on_set(void* member_ptr)
 {
 	if (member_ptr == &file_name)
 		read(file_name);
-	if (member_ptr == &h || member_ptr == &file_name || member_ptr == &skip_eval)
-		update_scene();
-	else
-		update_description();
-	post_redraw();
+	else 
+		if (!(member_ptr == &h || member_ptr == &file_name || member_ptr == &skip_eval)) {
+			update_description();
+			return;
+		}
+	implicit_primitive<T>::on_set(member_ptr);
 }
-#define sqr(x) (x)*(x)
 
 template <typename T, typename P, typename C>
 T mls_surface<T,P,C>::evaluate(const pnt_type& _p) const
@@ -207,16 +208,11 @@ void mls_surface<T,P,C>::draw(context& ctx)
 template <typename T, typename P, typename C>
 void mls_surface<T,P,C>::create_gui()
 {
-	add_view("mls",file_name)->set("color",0xFF8888);
 	add_view("extent", extent);
-	connect_copy(add_control("show_points", show_points, "check")->value_change, 
-		rebind(static_cast<cgv::base::base*>(this), &cgv::base::base::on_set, &show_points));
-	connect_copy(add_control("skip_eval", skip_eval, "check")->value_change, 
-		rebind(static_cast<cgv::base::base*>(this), &cgv::base::base::on_set, &skip_eval));
-	connect_copy(add_control("h", h, "value_slider", "min=0.001;max=1;ticks=true;log=true")->value_change, 
-		rebind(static_cast<cgv::base::base*>(this), &cgv::base::base::on_set, &h));
-	connect_copy(add_control("point_size", point_size, "value_slider", "min=1;max=30;ticks=true;log=true")->value_change, 
-		rebind(static_cast<cgv::base::base*>(this), &cgv::base::base::on_set, &point_size));
+	add_member_control(this, "show_points", show_points, "check"); 
+	add_member_control(this, "skip_eval", skip_eval, "check"); 
+	add_member_control(this, "h", h, "value_slider", "min=0.001;max=1;ticks=true;log=true"); 
+	add_member_control(this, "point_size", point_size, "value_slider", "min=1;max=30;ticks=true;log=true"); 
 	connect_copy(add_button("open")->click, rebind(this, &mls_surface<T,P,C>::open));
 }
 

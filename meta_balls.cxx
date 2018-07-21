@@ -1,10 +1,8 @@
-#include "scene.h"
 #include "knot_vector.h"
-#include <cgv/render/drawable.h>
 #include <cgv_gl/gl/gl.h>
 
 template <typename T>
-class meta_balls :  public knot_vector<T>, public cgv::render::drawable
+class meta_balls :  public knot_vector<T>
 {
 protected:
 	std::vector<T> ri;
@@ -19,6 +17,7 @@ public:
 		mat.set_ambient(cgv::media::illum::phong_material::color_type(0.3f, 0.0f, 0.0f));
 		mat.set_shininess(100);
 		show_spheres = false;
+		gui_color = 0xFF8888;
 	}
 	/// reflect members to expose them to serialization
 	bool self_reflect(cgv::reflect::reflection_handler& rh)
@@ -81,11 +80,9 @@ public:
 	}
 	void create_gui()
 	{
-		add_view("meta balls",name)->set("color",0xFF8888);
 		knot_vector<T>::create_gui();
 		add_member_control(this, "r", r, "value_slider", "min=0;max=5;ticks=true;log=true");
 		add_member_control(this, "show_spheres", show_spheres, "toggle");
-
 	}
 };
 

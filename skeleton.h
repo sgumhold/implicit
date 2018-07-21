@@ -1,13 +1,9 @@
 #pragma once
 
 #include "knot_vector.h"
-#include <cgv/render/drawable.h>
-#include <cgv_gl/gl/gl.h>
 
 template <typename T>
-class skeleton : 
-	public knot_vector<T>, 
-	public cgv::render::drawable
+class skeleton : public knot_vector<T>
 {
 public:
 	// edge is a pair of indices

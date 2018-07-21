@@ -1,35 +1,21 @@
-#include <cgv/math/mfunc.h>
-#include <cgv/base/base.h>
-#include <cgv/signal/rebind.h>
-#include <cgv/type/variant.h>
-#include "scene.h"
-
-using namespace cgv::math;
-using namespace cgv::signal;
-using namespace cgv::type;
-
-#define sqr(x) ((x)*(x))
+#include "implicit_primitive.h"
 
 template <typename T>
-class torus : 
-	public v3_func<T,T>, 
-	public provider,
-	public scene_updater,
-	public named
+class torus : public implicit_primitive<T>
 {
 public:
 	T r;
 	T R;
 	bool use_euclidean_distance;
 	std::string get_type_name() const { return "torus"; }
-	torus() : use_euclidean_distance(true), r(T(0.2)), R(T(0.8)) {}
-	void on_set(void* member_ptr) { update_scene(); }
+	torus() : use_euclidean_distance(true), r(T(0.2)), R(T(0.8)) { gui_color = 0xFF8888; }
 	/// reflect members to expose them to serialization
 	bool self_reflect(cgv::reflect::reflection_handler& rh)
 	{
 		return
 			rh.reflect_member("r", r) &&
-			rh.reflect_member("R", R);
+			rh.reflect_member("R", R) &&
+			implicit_primitive<T>::self_reflect(rh);
 	}
 	T evaluate(const pnt_type& p) const {
 		if (use_euclidean_distance) {
@@ -60,13 +46,8 @@ public:
 	}
 	void create_gui()
 	{
-		add_view("torus",name)->set("color",0xFF8888);
-		add_control("r", r, "value_slider", "min=0;max=2;ticks=true");
-		add_control("R", R, "value_slider", "min=0;max=3;ticks=true");
-		connect_copy(find_control(r)->value_change, rebind( 
-			static_cast<scene_updater*>(this), &scene_updater::update_scene));
-		connect_copy(find_control(R)->value_change, rebind( 
-			static_cast<scene_updater*>(this), &scene_updater::update_scene));
+		add_member_control(this, "r", r, "value_slider", "min=0;max=2;ticks=true");
+		add_member_control(this, "R", R, "value_slider", "min=0;max=3;ticks=true");
 	}
 };
 

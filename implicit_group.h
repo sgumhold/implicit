@@ -1,34 +1,37 @@
 #pragma once
 
+#include "implicit_base.h"
 #include <cgv/base/group.h>
-#include <cgv/math/mfunc.h>
-#include <cgv/gui/provider.h>
-#include <cgv/render/drawable.h>
-#include "scene.h"
 
-using namespace cgv::math;
 using namespace cgv::base;
-using namespace cgv::render;
-using namespace cgv::render::gl;
-using namespace cgv::gui;
+
+enum GroupColorMode
+{
+	GCM_REPLACE,
+	GCM_COMPOSE,
+	GCM_CHILD_0,
+	GCM_CHILD_1,
+	GCM_CHILD_2
+};
 
 /** base implementation for all group nodes*/
 template <typename T>
-class implicit_group : 
-	public group, 
-	public v3_func<T,T>, 
-	public scene_updater,
-	public drawable,
-	public provider
+class implicit_group : public group, public implicit_base<T>
 {
 protected:
-	/// give access to children of group as trivariate functions
-	std::vector<v3_func<T,T>*> func_children;
+	/// access to implicit base interface of children
+	implicit_base<T>* get_implicit_child(unsigned i);
+	/// const access to implicit base interface of children
+	const implicit_base<T>* get_implicit_child(unsigned i) const;
 	/// store for each child a flag whether the child is visible in the gui
 	std::vector<int> child_visible_in_gui;
-	/// use this type to avoid allocation on the heap
-	typedef cgv::math::fvec<double,3> fvec_type;
+	/// the way the color is computed
+	GroupColorMode color_mode;
+	/// overload to compose the colors of the function children
+	virtual clr_type compose_color(const pnt_type& p) const;
 public:
+	/// convert to cgv::base::base pointer
+	cgv::base::base* get_base() { return this; }
 	/// reflect members to expose them to serialization
 	bool self_reflect(cgv::reflect::reflection_handler& rh);
 	/// calls the update_scene method of scene_updater
@@ -37,6 +40,8 @@ public:
 	unsigned int append_child(base_ptr child);
 	/// returns "implicit_group"
 	std::string get_type_name() const;
+	/// evaluation of surface color based on color_mode
+	clr_type evaluate_color(const pnt_type& p) const;
 	/// passes on init to the children
 	bool init(context&);
 	/// passes on the scene pointer to the children
