@@ -314,6 +314,7 @@ bool scene::symbol_matches_description(unsigned int i, abst_scene_factory* facto
 scene::F* scene::parse_description_recursive(unsigned int& i, group* g)
 {
 	F* func_ptr = 0;
+	std::string group_defs;
 	while (i < (unsigned int)description.size()) {
 		bool used_factory = false;
 		unsigned int offset = 0;
@@ -329,6 +330,7 @@ scene::F* scene::parse_description_recursive(unsigned int& i, group* g)
 		}
 		if (used_factory) {
 			i += offset;
+			group_defs = "";
 			continue;
 		}
 		switch (description[i]) {
@@ -338,6 +340,7 @@ scene::F* scene::parse_description_recursive(unsigned int& i, group* g)
 				for (++i; i < description.size() && description[i] != ']'; ++i) {
 				}
 				std::string defs = description.substr(t,i-t);
+				group_defs = defs;
 				if (dynamic_cast<base*>(func_ptr))
 					dynamic_cast<base*>(func_ptr)->multi_set(defs);
 				break;
@@ -358,6 +361,8 @@ scene::F* scene::parse_description_recursive(unsigned int& i, group* g)
 				if (g) {
 					++i;
 					parse_description_recursive(i, g);
+					if (!group_defs.empty())
+						g->multi_set(group_defs);
 				}
 			}
 			break;
@@ -440,8 +445,14 @@ std::string scene::get_changed_values(F* fp, F* fp_ref) const
 			continue;
 		}
 		if (bp_ref) {
-			if (!bp_ref->get_void(to_string(toks1[0]), "string", &v1))
-				v1 = std::string();
+			if (!bp_ref->get_void(to_string(toks1[0]), "string", &v1)) {
+				v1 = "";
+				// hard coded special case of flags whether group children are visible in gui
+				int i;
+				if (to_string(toks1[0]).substr(0, 5) == "child" && cgv::utils::is_integer(to_string(toks1[0]).substr(5), i)) {
+					v1 = "true";
+				}
+			}
 		}
 		if (v1 != v) {
 			if (!decs.empty())

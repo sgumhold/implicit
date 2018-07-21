@@ -80,4 +80,4 @@ public:
 	}
 };
 
-scene_factory_registration<level_set<double> >sfr_level_set('l');
+scene_factory_registration<level_set<double> >sfr_level_set("level_set");

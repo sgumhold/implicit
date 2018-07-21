@@ -20,49 +20,43 @@ class torus :
 public:
 	T r;
 	T R;
+	bool use_euclidean_distance;
 	std::string get_type_name() const { return "torus"; }
-	torus()
+	torus() : use_euclidean_distance(true), r(T(0.2)), R(T(0.8)) {}
+	void on_set(void* member_ptr) { update_scene(); }
+	/// reflect members to expose them to serialization
+	bool self_reflect(cgv::reflect::reflection_handler& rh)
 	{
-		r = (T)0.2;
-		R = (T)0.8;
-	}
-	/// semicolon separated list of property declarations
-	std::string get_property_declarations() { return "r:flt64;R:flt64"; }
-	/// abstract interface for the setter of a dynamic property, by default it simply returns false
-	bool set_void(const std::string& property, const std::string& value_type, const void* value_ptr) {
-		if (property == "r") {
-			get_variant(r,value_type,value_ptr);
-			update_scene();
-			return true;
-		}
-		else if (property == "R") {
-			get_variant(R, value_type,value_ptr);
-			update_scene();
-			return true;
-		}
-		return false;
-	}
-	/// abstract interface for the getter of a dynamic property, by default it simply returns false
-	bool get_void(const std::string& property, const std::string& value_type, void* value_ptr) {
-		if (property == "r") {
-			set_variant(r,value_type,value_ptr);
-			return true;
-		}
-		else if (property == "R") {
-			set_variant(R,value_type,value_ptr);
-			return true;
-		}
-		return false;
+		return
+			rh.reflect_member("r", r) &&
+			rh.reflect_member("R", R);
 	}
 	T evaluate(const pnt_type& p) const {
-		return sqr(p.sqr_length()+sqr(R)-sqr(r))-4*sqr(R)*(sqr(p(0))+sqr(p(1)));
+		if (use_euclidean_distance) {
+			T l_xy = sqrt(sqr(p(0)) + sqr(p(1)));
+			if (l_xy < std::numeric_limits<T>::epsilon() * 10)
+				return sqrt(sqr(R) + sqr(p(2))) - r;
+			return (p - R / l_xy * pnt_type(p(0), p(1), 0)).length() - r;
+		}
+		else
+			return sqr(p.sqr_length()+sqr(R)-sqr(r))-4*sqr(R)*(sqr(p(0))+sqr(p(1)));
 	}
 	vec_type evaluate_gradient(const pnt_type& p) const {
-		T t0 = sqr(R); 
-		T t1 = 4*(p.sqr_length()+t0-sqr(r));
-		T t2 = 8*t0;
-		T t3 = t1-t2;
-		return vec_type(p(0)*t3, p(1)*t3,p(2)*t1);
+		if (use_euclidean_distance) {
+			T l_xy = sqrt(sqr(p(0)) + sqr(p(1)));
+			if (l_xy < std::numeric_limits<T>::epsilon() * 10)
+				return pnt_type(0, 0, 0);
+			pnt_type grad_vec = p - R / l_xy * pnt_type(p(0), p(1), 0);
+			grad_vec.normalize();
+			return grad_vec;
+		}
+		else {
+			T t0 = sqr(R);
+			T t1 = 4 * (p.sqr_length() + t0 - sqr(r));
+			T t2 = 8 * t0;
+			T t3 = t1 - t2;
+			return vec_type(p(0)*t3, p(1)*t3, p(2)*t1);
+		}
 	}
 	void create_gui()
 	{
@@ -76,4 +70,4 @@ public:
 	}
 };
 
-scene_factory_registration<torus<double> >sfr_torus('T');
+scene_factory_registration<torus<double> >sfr_torus("torus;T");

@@ -89,4 +89,4 @@ public:
 	}
 };
 
-scene_factory_registration<meta_balls<double> > sfr_meta_balls("M;meta_balls");
+scene_factory_registration<meta_balls<double> > sfr_meta_balls("meta_balls;M");

@@ -16,6 +16,7 @@ using namespace cgv::media;
 
 gl_implicit_surface_drawable::gl_implicit_surface_drawable() 
 {
+	box_scale = 1.2f;
 }
 
 std::string gl_implicit_surface_drawable::get_type_name() const
@@ -215,13 +216,9 @@ void gl_implicit_surface_drawable::create_gui()
 		add_member_control(this, "specular", material.ref_specular(), "color<float,RGBA>");
 		add_member_control(this, "emission", material.ref_emission(), "color<float,RGBA>");
 		add_member_control(this, "shininess", material.ref_shininess(), "value_slider", "min=0;max=128;ticks=true");
-		add_member_control(this, "&box", show_box, "check", "shortcut='b'");
-		add_member_control(this, "minx",box.ref_min_pnt()(0),"value_slider", "min=-10;max=10;ticks=true");
-		add_member_control(this, "maxx",box.ref_max_pnt()(0),"value_slider", "min=-10;max=10;ticks=true");
-		add_member_control(this, "miny",box.ref_min_pnt()(1),"value_slider", "min=-10;max=10;ticks=true");
-		add_member_control(this, "maxy",box.ref_max_pnt()(1),"value_slider", "min=-10;max=10;ticks=true");
-		add_member_control(this, "minz",box.ref_min_pnt()(2),"value_slider", "min=-10;max=10;ticks=true");
-		add_member_control(this, "maxz",box.ref_max_pnt()(2),"value_slider", "min=-10;max=10;ticks=true");
+		add_member_control(this, "&box", show_box, "check", "w=50;shortcut='b'", " ");
+		add_member_control(this, "scale", box_scale, "value_slider", "w=120;min=0.01;max=100;ticks=true;log=true");
+		add_gui("box", box, "",	"options='w=100;min=-10;max=10;step=0.01;ticks=true;align=\"BL\"';align_col=' '"); align("\n");
 		add_member_control(this, "sampling_&grid", show_sampling_grid, "check", "shortcut='g'");
 		add_member_control(this, "sampling_&points", show_sampling_locations, "check", "shortcut='p'");
 		add_member_control(this, "mini_box", show_mini_box, "check");
@@ -259,6 +256,16 @@ bool gl_implicit_surface_drawable::self_reflect(cgv::reflect::reflection_handler
 
 void gl_implicit_surface_drawable::on_set(void* p)
 {
+	if (p == &box_scale) {
+		if (find_control(box.ref_min_pnt()[0])) {
+			for (int i = 0; i < 3; ++i) {
+				find_control(box.ref_min_pnt()[i])->set("min", -box_scale);
+				find_control(box.ref_min_pnt()[i])->set("max", box_scale);
+				find_control(box.ref_max_pnt()[i])->set("min", -box_scale);
+				find_control(box.ref_max_pnt()[i])->set("max", box_scale);
+			}
+		}
+	}
 	if (p == &res)
 		resolution_change();
 	else if (p == &contouring_type || p == &res || p == &normal_threshold || p == &consistency_threshold || 

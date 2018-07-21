@@ -24,9 +24,13 @@ class implicit_group :
 protected:
 	/// give access to children of group as trivariate functions
 	std::vector<v3_func<T,T>*> func_children;
+	/// store for each child a flag whether the child is visible in the gui
+	std::vector<int> child_visible_in_gui;
 	/// use this type to avoid allocation on the heap
 	typedef cgv::math::fvec<double,3> fvec_type;
 public:
+	/// reflect members to expose them to serialization
+	bool self_reflect(cgv::reflect::reflection_handler& rh);
 	/// calls the update_scene method of scene_updater
 	void on_set(void* member_ptr);
 	/// append a new child and extract trivariate function

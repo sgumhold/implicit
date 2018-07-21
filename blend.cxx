@@ -26,6 +26,7 @@ public:
 		
 		// reflect statically allocated members
 		bool do_continue = 
+			implicit_group<T>::self_reflect(rh) &&
 			rh.reflect_member("n", n) &&
 			rh.reflect_member("p", p) &&
 			rh.reflect_member("is_union", is_union) &&
@@ -49,11 +50,6 @@ public:
 				return false;
 		
 		return true;
-	}
-	/// ensure that scene is updated if parameters change
-	void on_set(void* member_ptr)
-	{
-		update_scene();
 	}
 	///
 	T evaluate(const pnt_type& q) const {
@@ -178,7 +174,8 @@ public:
 	}
 	/// description of members
 	bool self_reflect(cgv::reflect::reflection_handler& rh) { 
-		return rh.reflect_member("width", width); 
+		return implicit_group<T>::self_reflect(rh) &&
+			rh.reflect_member("width", width); 
 	}
 	///
 	void on_set(void* member_ptr) {
@@ -198,5 +195,5 @@ public:
 	}	
 };
 
-scene_factory_registration<blend_node<double> >sfr_blend("b;blend");
-scene_factory_registration<spatial_blend_node<double> >sfr_spatial_blend("X;spatial_blend");
+scene_factory_registration<blend_node<double> >sfr_blend("blend");
+scene_factory_registration<spatial_blend_node<double> >sfr_spatial_blend("spatial_blend");

@@ -10,9 +10,36 @@ struct provider_access : public cgv::gui::provider
 };
 */
 
+/// reflect members to expose them to serialization
+template <typename T>
+bool implicit_group<T>::self_reflect(cgv::reflect::reflection_handler& rh)
+{
+	for (unsigned i = 0; i < get_nr_children(); ++i) {
+		if (!rh.reflect_member(std::string("child") + cgv::utils::to_string(i), (bool&)(child_visible_in_gui[i])))
+			return false;
+	}
+	return true;
+}
+
 template <typename T>
 void implicit_group<T>::on_set(void* member_ptr)
 {
+	for (unsigned i = 0; i < get_nr_children(); ++i) {
+		provider* pp = get_child(i)->get_interface<provider>();
+		if (member_ptr == &child_visible_in_gui[i]) {
+			if (pp)
+				ref_tree_node_visible_flag(*pp) = (bool&)child_visible_in_gui[i];
+			update_description();
+			return;
+		}
+		if (pp) {
+			bool& toggle = ref_tree_node_visible_flag(*pp);
+			(bool&)(child_visible_in_gui[i]) = toggle;
+			update_description();
+			return;
+//			std::cout << "toggled tree node of child " << i << " to " << (toggle ? "visible" : "hidden") << std::endl;
+		}
+	}
 	update_scene();
 }
 
@@ -22,6 +49,7 @@ unsigned int implicit_group<T>::append_child(base_ptr child)
 {
 	unsigned int i = group::append_child(child);
 	func_children.push_back(child->get_interface<v3_func<T,T> >());
+	child_visible_in_gui.push_back(1);
 	return i;
 }
 
@@ -32,13 +60,13 @@ void implicit_group<T>::create_gui()
 	for (unsigned int i=0; i<get_nr_children(); ++i) {
 		base_ptr bp = get_child(i);
 		provider* pp = bp->get_interface<provider>();
-		if (pp)
-			inline_object_gui(bp);
-/*			provider_access* ppa = static_cast<provider_access*>(pp);
-			gui_group_ptr my_parent = static_cast<provider_access*>((provider*)this)->get_parent();
-			ppa->set_parent_public(my_parent);
-			pp->create_gui();
-		}*/
+		if (pp) {
+			ref_tree_node_visible_flag(*pp) = (bool&)child_visible_in_gui[i];
+			if (begin_tree_node(std::string("child ") + cgv::utils::to_string(i), *pp, (bool&)child_visible_in_gui[i], "level=3")) {
+				inline_object_gui(bp);
+				end_tree_node(*pp);
+			}
+		}
 	}
 	align("\b");
 }

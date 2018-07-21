@@ -11,6 +11,8 @@ class gl_implicit_surface_drawable :
 	public cgv::gui::provider,
 	public cgv::render::gl::gl_implicit_surface_drawable_base
 {
+private:
+	float box_scale;
 protected:
 	double map_to_zero_value;
 	double map_to_one_value;

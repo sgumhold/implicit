@@ -29,4 +29,4 @@ public:
 	}
 };
 
-scene_factory_registration<heart<double> >sfr_heart('H');
+scene_factory_registration<heart<double> >sfr_heart("heart");

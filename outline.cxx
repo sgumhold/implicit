@@ -26,13 +26,13 @@ public:
 		if (func_children.empty())
 			return 1;
 		T f = func_children[0]->evaluate(p);
-		return f*f - o*o;
+		return fabs(f) - o;
 	}
 	vec_type evaluate_gradient(const pnt_type& p) const {
 		if (func_children.empty())
 			return vec_type(0,0,0);
 		T f = func_children[0]->evaluate(p);
-		return 2*f*func_children[0]->evaluate_gradient(p);
+		return (f < 0 ? T(-1) : T(1))*func_children[0]->evaluate_gradient(p);
 	}
 	void create_gui()
 	{
@@ -42,4 +42,4 @@ public:
 	}
 };
 
-scene_factory_registration<outline<double> >sfr_offset("o;outline");
+scene_factory_registration<outline<double> >sfr_offset("outline");

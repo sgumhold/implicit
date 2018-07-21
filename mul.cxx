@@ -27,4 +27,4 @@ public:
 	}	
 };
 
-scene_factory_registration<mul_node<double> >sfr_blend('m');
+scene_factory_registration<mul_node<double> >sfr_blend("multiply");

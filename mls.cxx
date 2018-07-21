@@ -220,4 +220,4 @@ void mls_surface<T,P,C>::create_gui()
 	connect_copy(add_button("open")->click, rebind(this, &mls_surface<T,P,C>::open));
 }
 
-scene_factory_registration<mls_surface<double,float,unsigned char> > sfr_mls('L');
+scene_factory_registration<mls_surface<double,float,unsigned char> > sfr_mls("mls");
