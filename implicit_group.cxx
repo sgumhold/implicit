@@ -26,18 +26,18 @@ void implicit_group<T>::on_set(void* member_ptr)
 {
 	for (unsigned i = 0; i < get_nr_children(); ++i) {
 		provider* pp = get_child(i)->get_interface<provider>();
+		if (!pp)
+			continue;
+		bool& toggle = ref_tree_node_visible_flag(*pp);
 		if (member_ptr == &child_visible_in_gui[i]) {
-			if (pp)
-				ref_tree_node_visible_flag(*pp) = (bool&)child_visible_in_gui[i];
+			toggle = (bool&)child_visible_in_gui[i];
 			update_description();
 			return;
 		}
-		if (pp) {
-			bool& toggle = ref_tree_node_visible_flag(*pp);
+		if (member_ptr == &toggle) {
 			(bool&)(child_visible_in_gui[i]) = toggle;
 			update_description();
 			return;
-//			std::cout << "toggled tree node of child " << i << " to " << (toggle ? "visible" : "hidden") << std::endl;
 		}
 	}
 	update_scene();
