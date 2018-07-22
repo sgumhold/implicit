@@ -1,10 +1,36 @@
 #include "implicit_base.h"
 
+/// set new scene update handler
+template <typename T>
+void implicit_base<T>::set_update_handler(scene_update_handler* uh)
+{
+	update_handler = uh;
+}
+
+
+/// to be called if scene has changed due to gui interaction
+template <typename T>
+void implicit_base<T>::update_scene()
+{
+	if (update_handler)
+		update_handler->update_scene();
+}
+
+/// callback for functions that update the scene description without the implicit function
+template <typename T>
+void implicit_base<T>::update_description()
+{
+	if (update_handler)
+		update_handler->update_description();
+}
+
+
 /// constructor sets default gui color
 template <typename T>
 implicit_base<T>::implicit_base() : color(0.5f, 0.5f, 0.5f, 1.0f)
 {
 	gui_color = 0x888888;
+	update_handler = 0;
 }
 
 template <typename T>

@@ -7,6 +7,8 @@
 #include <cgv/utils/advanced_scan.h>
 #include <cgv/type/variant.h>
 #include <cgv/math/qem.h>
+#include <cgv/base/register.h>
+#include <cgv/utils/convert_string.h>
 
 using namespace cgv::media::font;
 
@@ -311,7 +313,7 @@ base_ptr scene::parse_description_recursive(unsigned int& i, group* g)
 		for (unsigned int j=0; j<factories.size(); ++j) {
 			if (symbol_matches_description(i, factories[j], offset)) {
 				bp = factories[j]->create_function();
-				bp->get_interface<implicit_type>()->set_scene(this);
+				bp->get_interface<implicit_type>()->set_update_handler(this);
 				used_factory = true;
 				break;
 			}
@@ -585,35 +587,6 @@ void scene::create_gui()
 	if (func_base_ptr)
 		inline_object_gui(func_base_ptr);
 }
-
-scene_updater::scene_updater() : s(0) 
-{
-}
-
-scene* scene_updater::get_scene() const 
-{
-	return s; 
-}
-
-void scene_updater::update_scene() 
-{
-	if (s)
-		s->update_scene(); 
-}
-
-/// callback for functions that update the scene description without the implicit function
-void scene_updater::update_description()
-{
-	s->update_description(); 
-}
-
-
-void scene_updater::set_scene(scene* _s) 
-{
-	s = _s;
-}
-
-
 
 struct scene_registration
 {

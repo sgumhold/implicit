@@ -44,8 +44,8 @@ public:
 	clr_type evaluate_color(const pnt_type& p) const;
 	/// passes on init to the children
 	bool init(context&);
-	/// passes on the scene pointer to the children
-	void set_scene(scene* _s);
+	/// passes on the update handler to the children
+	void set_update_handler(scene_update_handler* uh);
 	/// create gui of children. Call this inside implementations of create_gui of derived classes.
 	void create_gui();
 };

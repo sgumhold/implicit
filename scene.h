@@ -1,74 +1,14 @@
 #pragma once
 
-#include <cgv/base/base.h>
+#include "implicit_base.h"
 #include <cgv/gui/text_editor.h>
-#include <cgv/render/drawable.h>
-#include <cgv/gui/provider.h>
-#include <cgv/base/register.h>
-#include <cgv/utils/convert_string.h>
 #include "gl_implicit_surface_drawable.h"
-
-using namespace cgv::render;
-using namespace cgv::gui;
-using namespace cgv::base;
-
-template <typename T>
-class implicit_base;
-
-struct abst_scene_factory
-{
-	std::string names;
-	virtual void init_counter() = 0;
-	virtual base_ptr create_function() = 0;
-};
-
-extern void register_scene_factory(abst_scene_factory* _scene_factory);
-
-template <typename T>
-struct scene_factory : public abst_scene_factory
-{
-	static unsigned int& ref_counter() { 
-		static unsigned int counter = 1;
-		return counter;
-	}
-	static std::string& ref_base_name() {
-		static std::string base_name;
-		return base_name;
-	}
-	scene_factory(const std::string& _names, const std::string& base_name = "") {
-		names = _names;
-		ref_base_name() = base_name;
-		if (base_name.empty()) {
-			T dummy;
-			ref_base_name() = dummy.get_base()->get_type_name();
-		}
-	}
-	void init_counter() {
-		ref_counter() = 1;
-	}
-	base_ptr create_function() {
-		T* f = new T;
-		f->set_name(ref_base_name() + "_" + cgv::utils::to_string(ref_counter()));
-		++ref_counter();
-		return f;
-	};
-};
-
-/** use this registration struct to register a factory for your 
-	 implementation of an implicit function.
-*/
-template <typename T>
-struct scene_factory_registration
-{
-	scene_factory_registration(const std::string& _names, const std::string& _base_name = "") {
-		register_scene_factory(new scene_factory<T>(_names, _base_name));
-	}
-};
 
 ///
 class scene :
 	public group,
 	public gl_implicit_surface_drawable::F,
+	public scene_update_handler,
 	public drawable,
 	public provider,
 	public text_editor_callback_handler
@@ -142,25 +82,6 @@ public:
 	double evaluate(const pnt_type& p) const;
 	/// cast gradient evaluation to func_base_ptr
 	vec_type evaluate_gradient(const pnt_type& p) const;
-};
-
-/** interface for function implementations that change the
-    scene based on gui interaction. */
-class scene_updater
-{
-private:
-	scene* s;
-public:
-	/// default constructor
-	scene_updater();
-	/// access to scene pointer
-	scene* get_scene() const;
-	/// set the scene pointer. Can be overloaded to pass pointer on to children of a group.
-	virtual void set_scene(scene* _s);
-	/// to be called if scene has changed due to gui interaction
-	void update_scene();
-	/// callback for functions that update the scene description without the implicit function
-	void update_description();
 };
 
 /// ref counted pointer to a scene

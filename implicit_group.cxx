@@ -1,6 +1,15 @@
 #include "implicit_group.h"
 #include "implicit_primitive.h"
 
+/// passes on the update handler to the children
+template <typename T>
+void implicit_group<T>::set_update_handler(scene_update_handler* uh)
+{
+	implicit_base<T>::set_update_handler(uh);
+	for (size_t i = 0; i<get_nr_children(); ++i)
+		get_implicit_child(i)->set_update_handler(uh);
+}
+
 /// reflect members to expose them to serialization
 template <typename T>
 bool implicit_group<T>::self_reflect(cgv::reflect::reflection_handler& rh)
@@ -126,14 +135,6 @@ template <typename T>
 std::string implicit_group<T>::get_type_name() const
 {
 	return "implicit_group";
-}
-
-template <typename T>
-void implicit_group<T>::set_scene(scene* _s)
-{
-	scene_updater::set_scene(_s);
-	for (size_t i=0; i<get_nr_children(); ++i)
-		get_implicit_child(i)->set_scene(_s);
 }
 
 template <typename T>
