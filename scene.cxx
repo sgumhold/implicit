@@ -274,9 +274,12 @@ void scene::parse_description()
 	post_redraw();
 	if (func_base_ptr) {
 		append_child(func_base_ptr);
-		get_context()->make_current();
-		get_context()->configure_new_child(func_base_ptr);
-		impl_draw_ptr->set_function(this);
+		if (get_context()) {
+			get_context()->make_current();
+			get_context()->configure_new_child(func_base_ptr);
+		}
+		if (impl_draw_ptr)
+			impl_draw_ptr->set_function(this);
 	}
 	disable_update = false;
 }
@@ -607,3 +610,5 @@ struct scene_registration
 std::string scene_registration::options;
 
 scene_registration scene_reg("");
+
+cgv::base::registration_order_definition ro_def("stereo_view_interactor;implicit surface");
