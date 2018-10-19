@@ -611,4 +611,6 @@ std::string scene_registration::options;
 
 scene_registration scene_reg("");
 
+#ifdef CGV_FORCE_STATIC
 cgv::base::registration_order_definition ro_def("stereo_view_interactor;implicit surface");
+#endif
