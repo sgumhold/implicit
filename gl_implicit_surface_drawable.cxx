@@ -34,8 +34,8 @@ void gl_implicit_surface_drawable::toggle_range()
 void gl_implicit_surface_drawable::adjust_range()
 {
 	// prepare private members
-	pnt_type p = box.get_min_pnt();
-	pnt_type d = box.get_extent();
+	dvec3 p = box.get_min_pnt();
+	dvec3 d = box.get_extent();
 	d(0) /= (res - 1); d(1) /= (res - 1); d(2) /= (res - 1);
 	
 	// prepare progression
@@ -80,15 +80,15 @@ void gl_implicit_surface_drawable::export_volume()
 	if (os.fail())
 		return;
 	os << "Size:      " << res << ", " << res << ", " << res << std::endl;
-	pnt_type scaling = box.get_extent(); // / pnt_type(res, res, res);
+	dvec3 scaling = box.get_extent(); // / dvec3(res, res, res);
 
 	os << "Spacing:   " << scaling(0) << ", " << scaling(1) << ", " << scaling(2) << std::endl;
 	os.close();
 
 	std::vector<unsigned char> data;
 	// prepare private members
-	pnt_type p = box.get_min_pnt();
-	pnt_type d = box.get_extent();
+	dvec3 p = box.get_min_pnt();
+	dvec3 d = box.get_extent();
 	d(0) /= (res - 1); d(1) /= (res - 1); d(2) /= (res - 1);
 
 	// prepare progression
@@ -211,11 +211,11 @@ void gl_implicit_surface_drawable::create_gui()
 	if (begin_tree_node("Visualization", wireframe)) {
 		align("\a");
 		add_member_control(this, "&wireframe", wireframe, "check", "shortcut='W'");
-		add_member_control(this, "ambient", material.ref_ambient(), "color<float,RGBA>");
-		add_member_control(this, "diffuse", material.ref_diffuse(), "color<float,RGBA>");
-		add_member_control(this, "specular", material.ref_specular(), "color<float,RGBA>");
-		add_member_control(this, "emission", material.ref_emission(), "color<float,RGBA>");
-		add_member_control(this, "shininess", material.ref_shininess(), "value_slider", "min=0;max=128;ticks=true");
+		if (begin_tree_node("Material", material)) {
+			align("\a");
+			add_gui("material", material);
+			align("\b");
+		}
 		add_member_control(this, "&box", show_box, "check", "w=50;shortcut='b'", " ");
 		add_member_control(this, "scale", box_scale, "value_slider", "w=120;min=0.01;max=100;ticks=true;log=true");
 		add_gui("box", box, "",	"options='w=100;min=-10;max=10;step=0.01;ticks=true;align=\"BL\"';align_col=' '"); align("\n");
