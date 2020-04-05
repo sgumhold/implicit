@@ -1,12 +1,14 @@
 #include "implicit_group.h"
 
 #include <cgv_gl/gl/gl.h>
+#include <cgv/math/ftransform.h>
+#include <cgv_gl/arrow_renderer.h>
 
 template <typename T>
 struct transformation : public implicit_group<T>
 {
 	bool show_axes;
-
+	
 	transformation() : show_axes(false) { gui_color = 0x88FF88; }
 
 	void on_set(void* member_ptr)
@@ -30,27 +32,48 @@ struct transformation : public implicit_group<T>
 		add_member_control(this, "show_axes", show_axes, "check");
 		implicit_group<T>::create_gui();
 	}
+	bool init(context& ctx)
+	{
+		ref_arrow_renderer(ctx, 1);
+		return true;
+	}
+	void clear(context& ctx)
+	{
+		ref_arrow_renderer(ctx, -1);
+	}
+
 	void draw(context& ctx)
 	{
 		if (show_axes) {
-			glPushMatrix();
-			glEnable(GL_COLOR_MATERIAL);
-			ctx.enable_material();
-			glColor3f(0, 0, 1);
-			ctx.tesselate_arrow(1.2, 0.025);
-			glRotated(90, 0, 1, 0);
-			glColor3f(1, 0, 0);
-			ctx.tesselate_arrow(1.2, 0.025);
-			glRotated(-90, 1, 0, 0);
-			glColor3f(0, 1, 0);
-			ctx.tesselate_arrow(1.2, 0.025);
-			ctx.disable_material();
-			glPopMatrix();			
+			static mat3 I; I.identity();
+			static mat3 Z; Z.zeros();
+			static arrow_render_style ars;
+			ars.radius_relative_to_length = 0.025f;
+			auto& ar = cgv::render::ref_arrow_renderer(ctx);
+			ar.set_render_style(ars);
+			ar.set_position_array(ctx, &Z.col(0), 3);
+			ar.set_direction_array(ctx, &I.col(0), 3);
+			ar.set_color_array(ctx, reinterpret_cast<const rgb*>(&I.col(0)), 3);
+			ar.render(ctx, 0, 3);
+			//glPushMatrix();
+			//glEnable(GL_COLOR_MATERIAL);
+			//ctx.enable_material();
+			//glColor3f(0, 0, 1);
+			//ctx.tesselate_arrow(1.2, 0.025);
+			//glRotated(90, 0, 1, 0);
+			//glColor3f(1, 0, 0);
+			//ctx.tesselate_arrow(1.2, 0.025);
+			//glRotated(-90, 1, 0, 0);
+			//glColor3f(0, 1, 0);
+			//ctx.tesselate_arrow(1.2, 0.025);
+			//ctx.disable_material();
+			//glPopMatrix();			
 		}
 	}
 	void finish_draw(context& ctx)
 	{
-		glPopMatrix();
+		ctx.pop_modelview_matrix();
+		//glPopMatrix();
 	}
 };
 
@@ -100,8 +123,12 @@ struct rotation : public transformation<T>
 	}
 	void draw(context& ctx)
 	{
-		glPushMatrix();
-		glRotated(angle, axis(0), axis(1), axis(2));
+		ctx.push_modelview_matrix();
+		ctx.mul_modelview_matrix(cgv::math::rotate4<double>(angle, axis));
+
+	//	glPushMatrix();
+	//	glRotated(angle, axis(0), axis(1), axis(2));
+
 		transformation<T>::draw(ctx);
 	}
 	std::string get_type_name() const
@@ -145,8 +172,10 @@ struct translation : public transformation<T>
 	}
 	void draw(context& ctx)
 	{
-		glPushMatrix();
-		glTranslated(delta(0),delta(1),delta(2));
+		ctx.push_modelview_matrix();
+		ctx.mul_modelview_matrix(cgv::math::translate4<double>(delta));
+	//	glPushMatrix();
+	//	glTranslated(delta(0),delta(1),delta(2));
 		transformation<T>::draw(ctx);
 	}
 	std::string get_type_name() const
@@ -204,8 +233,10 @@ struct scaling : public transformation<T>
 	}
 	void draw(context& ctx)
 	{
-		glPushMatrix();
-		glScaled(scale(0),scale(1),scale(2));
+	//	glPushMatrix();
+	//	glScaled(scale(0),scale(1),scale(2));
+		ctx.push_modelview_matrix();
+		ctx.mul_modelview_matrix(cgv::math::scale4<double>(scale));
 		transformation<T>::draw(ctx);
 	}
 	std::string get_type_name() const
@@ -256,8 +287,10 @@ struct uniform_scaling : public transformation<T>
 	}
 	void draw(context& ctx)
 	{
-		glPushMatrix();
-		glScaled(scale,scale,scale);
+		//glPushMatrix();
+		//glScaled(scale,scale,scale);
+		ctx.push_modelview_matrix();
+		ctx.mul_modelview_matrix(cgv::math::scale4<double>(scale,scale,scale));
 		transformation<T>::draw(ctx);
 	}
 	std::string get_type_name() const
@@ -307,14 +340,22 @@ struct shear : public transformation<T>
 	}
 	void draw(context& ctx)
 	{
-		glPushMatrix();
-		GLdouble M[16] = {
-			1, h_xy, h_xz, 0,
-			0,    1, h_yz, 0,
-			0,    1,    1, 0,
-			0,    0,    0, 1
-		};
-		glMultMatrixd(M);
+		//glPushMatrix();
+		//GLdouble M[16] = {
+		//	1, h_xy, h_xz, 0,
+		//	0,    1, h_yz, 0,
+		//	0,    1,    1, 0,
+		//	0,    0,    0, 1
+		//};
+		//glMultMatrixd(M);
+		ctx.push_modelview_matrix();
+		dmat4 M;
+		M.identity();
+		M(0, 1) = h_xy;
+		M(0, 2) = h_xz;
+		M(1, 2) = h_yz;
+		ctx.mul_modelview_matrix(M);
+
 		transformation<T>::draw(ctx);
 	}
 	std::string get_type_name() const
@@ -326,5 +367,5 @@ struct shear : public transformation<T>
 scene_factory_registration<rotation<double> >sfr_rotation("rotate;r");
 scene_factory_registration<translation<double> >sfr_translation("translate;t");
 scene_factory_registration<scaling<double> >sfr_scaling("scale;s");
-scene_factory_registration<shear<double> >sfr_shear("shear");
-scene_factory_registration<uniform_scaling<double> >sfr_uniform_scaling("scale_uniform;u");
+scene_factory_registration<shear<double> >sfr_shear("shear;h");
+scene_factory_registration<uniform_scaling<double> >sfr_uniform_scaling("uniform_scaling;u");

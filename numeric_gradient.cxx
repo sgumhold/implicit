@@ -50,4 +50,4 @@ public:
 	}
 };
 
-scene_factory_registration<numeric_gradient<double> >sfr_numeric_gradient("numeric_gradient");
+scene_factory_registration<numeric_gradient<double> >sfr_numeric_gradient("numeric_gradient;g");

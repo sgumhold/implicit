@@ -3,6 +3,7 @@
 #include <cgv/signal/rebind.h>
 #include <cgv/base/group.h>
 #include <cgv/gui/file_dialog.h>
+#include <cgv/gui/key_event.h>
 #include <cgv/base/register.h>
 #include <cgv/utils/file.h>
 #include <fstream>
@@ -149,15 +150,6 @@ void gl_implicit_surface_drawable::surface_extraction()
 	update_member(&nr_vertices);
 }
 
-void gl_implicit_surface_drawable::build_display_list()
-{
-	gl_implicit_surface_drawable_base::build_display_list();
-	if (find_view(nr_faces)) {
-		find_view(nr_faces)->update();
-		find_view(nr_vertices)->update();
-	}
-}
-
 void gl_implicit_surface_drawable::resolution_change()
 {
 	if (find_control(ix)) {
@@ -166,6 +158,84 @@ void gl_implicit_surface_drawable::resolution_change()
 		find_control(iz)->set("max",res-1);
 	}
 	post_rebuild();
+}
+
+void gl_implicit_surface_drawable::stream_help(std::ostream& os)
+{
+}
+
+bool gl_implicit_surface_drawable::handle(cgv::gui::event& e)
+{
+	if (e.get_kind() != cgv::gui::EID_KEY)
+		return false;
+	auto& ke = reinterpret_cast<cgv::gui::key_event&>(e);
+	if (ke.get_action() != cgv::gui::KA_PRESS)
+		return false;
+	switch (ke.get_key()) {
+	case 'M':
+		if (ke.get_modifiers() != 0)
+			return false;
+		contouring_type = MARCHING_CUBES;
+		on_set(&contouring_type);
+		return true;
+	case 'D':
+		if (ke.get_modifiers() != 0)
+			return false;
+		contouring_type = DUAL_CONTOURING;
+		on_set(&contouring_type);
+		return true;
+	case 'N':
+		if (ke.get_modifiers() == 0) {
+			show_gradient_normals = !show_gradient_normals;
+			on_set(&show_gradient_normals);
+		}
+		else {
+			show_mesh_normals = !show_mesh_normals;
+			on_set(&show_mesh_normals);
+		}
+		return true;
+	case 'B' :
+		if (ke.get_modifiers() != 0)
+			return false;
+		show_box = !show_box;
+		on_set(&show_box);
+		return true;
+	case 'W' :
+		if (ke.get_modifiers() != 0)
+			return false;
+		wireframe = !wireframe;
+		on_set(&wireframe);
+		return true;
+	case 'G' :
+		if (ke.get_modifiers() != 0)
+			return false;
+		normal_computation_type = GRADIENT_NORMALS;
+		on_set(&normal_computation_type);
+		return true;
+	case 'F':
+		if (ke.get_modifiers() != 0)
+			return false;
+		normal_computation_type = FACE_NORMALS;
+		on_set(&normal_computation_type);
+		return true;
+	case 'C':
+		normal_computation_type = ke.get_modifiers() == cgv::gui::EM_SHIFT ? CORNER_GRADIENTS : CORNER_NORMALS;
+		on_set(&normal_computation_type);
+		return true;
+	case 'Q':
+		if (ke.get_modifiers() != 0)
+			return false;
+		res *= 2;
+		on_set(&res);
+		return true;
+	case 'A':
+		if (ke.get_modifiers() != 0 || res < 4)
+			return false;
+		res /= 2;
+		on_set(&res);
+		return true;
+	}
+	return false;
 }
 
 /// you must overload this for gui creation
@@ -210,7 +280,7 @@ void gl_implicit_surface_drawable::create_gui()
 
 	if (begin_tree_node("Visualization", wireframe)) {
 		align("\a");
-		add_member_control(this, "&wireframe", wireframe, "check", "shortcut='W'");
+		add_member_control(this, "wireframe", wireframe, "check");
 		if (begin_tree_node("Material", material)) {
 			align("\a");
 			add_gui("material", material);
@@ -274,7 +344,8 @@ void gl_implicit_surface_drawable::on_set(void* p)
 		   post_rebuild();
 	else if (p == &ix || p == &iy || p == &iz || p == &wireframe || p == &show_sampling_grid ||
 	    p == &show_sampling_locations || p == &show_box || p == &show_mini_box || 
-		 p == &show_gradient_normals || p == &show_mesh_normals)
+		 p == &show_gradient_normals || p == &show_mesh_normals || 
+		(p >= &material && p < &material+1))
 			post_redraw();
 	update_member(p);
 }

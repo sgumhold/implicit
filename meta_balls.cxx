@@ -1,5 +1,6 @@
 #include "knot_vector.h"
 #include <cgv_gl/gl/gl.h>
+#include <cgv_gl/sphere_renderer.h>
 
 template <typename T>
 class meta_balls :  public knot_vector<T>
@@ -63,11 +64,28 @@ public:
 	std::string get_type_name() const { 
 		return "meta_balls"; 
 	}
+	bool init(context& ctx)
+	{
+		ref_sphere_renderer(ctx, 1);
+		return true;
+	}
+	void clear(context& ctx)
+	{
+		ref_sphere_renderer(ctx, -1);
+	}
 	/// its a drawable
 	void draw(context& ctx)
 	{
 		if (!show_spheres)
 			return;
+		static sphere_render_style srs;
+		srs.surface_color = rgb(0.5f, 0.5f, 0.5f);
+		auto& sr = cgv::render::ref_sphere_renderer(ctx);
+		sr.set_render_style(srs);
+		sr.set_position_array(ctx, points);
+		sr.set_radius_array(ctx, ri);
+		sr.render(ctx, 0, points.size());
+		/*
 		ctx.enable_material(mat);
 		for (unsigned int i=0; i<points.size(); ++i) {
 			glPushMatrix();
@@ -77,6 +95,7 @@ public:
 			glPopMatrix();
 		}
 		ctx.disable_material(mat);
+		*/
 	}
 	void create_gui()
 	{
