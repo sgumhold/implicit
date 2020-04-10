@@ -50,7 +50,7 @@ void qem_test()
 
 scene_ptr ref_scene()
 {
-	static scene_ptr sp(new scene("+(T[],r[](T[]))"));
+	static scene_ptr sp(new scene("scene", "+(T[],r[](T[]))"));
 	return sp;
 }
 
@@ -217,11 +217,11 @@ void scene::update_style(int text_pos, int min_nr_checked)
 	}
 }
 
-scene::scene(const std::string& _description) 
+scene::scene(const std::string& _name, const std::string& _description)
 	: description(_description),
-	  impl_draw_ptr(new gl_implicit_surface_drawable())
+	  impl_draw_ptr(new gl_implicit_surface_drawable("implicit"))
 {
-	name = "scene";
+	name = _name;
 
 	disable_update = false;
 	help_shown = false;

@@ -71,7 +71,7 @@ public:
 	/// registration of scene factories;
 	void register_factory(abst_scene_factory* _scene_factory);
 	/// construct scene from a description string
-	scene(const std::string& _description = "S");
+	scene(const std::string& _name, const std::string& _description = "S");
 	/// called to unregister derived guis and drawables
 	void unregister();
 	/// overload to return the type name of this object

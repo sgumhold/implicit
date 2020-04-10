@@ -4,6 +4,7 @@
 #include <cgv/base/group.h>
 #include <cgv/gui/file_dialog.h>
 #include <cgv/gui/key_event.h>
+#include <cgv/gui/mouse_event.h>
 #include <cgv/base/register.h>
 #include <cgv/utils/file.h>
 #include <fstream>
@@ -15,9 +16,8 @@ using namespace cgv::signal;
 using namespace cgv::render::gl;
 using namespace cgv::media;
 
-gl_implicit_surface_drawable::gl_implicit_surface_drawable() 
+gl_implicit_surface_drawable::gl_implicit_surface_drawable(const std::string& name) : cgv::base::node(name)
 {
-	box_scale = 1.2f;
 }
 
 std::string gl_implicit_surface_drawable::get_type_name() const
@@ -68,6 +68,13 @@ void gl_implicit_surface_drawable::adjust_range()
 	}
 	update_member(&map_to_zero_value);
 	update_member(&map_to_one_value);
+}
+
+void gl_implicit_surface_drawable::extract_mesh()
+{
+	gl_implicit_surface_drawable_base::extract_mesh();
+	update_member(&srs.radius_scale);
+	update_member(&crs.radius_scale);
 }
 
 void gl_implicit_surface_drawable::export_volume()
@@ -164,8 +171,50 @@ void gl_implicit_surface_drawable::stream_help(std::ostream& os)
 {
 }
 
+bool gl_implicit_surface_drawable::init(cgv::render::context& ctx)
+{
+	view_ptr = find_view_as_node();
+	return gl_implicit_surface_drawable_base::init(ctx);
+}
+
 bool gl_implicit_surface_drawable::handle(cgv::gui::event& e)
 {
+	// check for mouse click
+	if (e.get_kind() == cgv::gui::EID_MOUSE) {
+		auto& me = reinterpret_cast<cgv::gui::mouse_event&>(e);
+		if (view_ptr) {
+			if (me.get_action() == cgv::gui::MA_PRESS) {
+				if (me.get_modifiers() == cgv::gui::EM_CTRL) {
+					if (me.get_button() == cgv::gui::MB_LEFT_BUTTON) {
+						dvec3 p;
+						if (get_world_location(me.get_x(), me.get_y(), *view_ptr, p)) {
+							// and define mini box location such that it includes the picked location
+							dvec3 q = (p - box.get_min_pnt())/(1.0/(res-1)*box.get_extent());
+							ix = int(q(0));
+							if (ix < 0)
+								ix = 0;
+							if (ix >= res)
+								ix = res - 1;
+							iy = int(q(1));
+							if (iy < 0)
+								iy = 0;
+							if (iy >= res)
+								iy = res - 1;
+							iz = int(q(2));
+							if (iz < 0)
+								iz = 0;
+							if (iz >= res)
+								iz = res - 1;
+							update_member(&ix);
+							update_member(&iy);
+							update_member(&iz);
+							post_redraw();
+						}
+					}
+				}
+			}
+		}
+	}
 	if (e.get_kind() != cgv::gui::EID_KEY)
 		return false;
 	auto& ke = reinterpret_cast<cgv::gui::key_event&>(e);
@@ -200,11 +249,23 @@ bool gl_implicit_surface_drawable::handle(cgv::gui::event& e)
 		show_box = !show_box;
 		on_set(&show_box);
 		return true;
-	case 'W' :
+	case 'V':
 		if (ke.get_modifiers() != 0)
 			return false;
-		wireframe = !wireframe;
-		on_set(&wireframe);
+		show_vertices = !show_vertices;
+		on_set(&show_vertices);
+		return true;
+	case 'W':
+		if (ke.get_modifiers() != 0)
+			return false;
+		show_wireframe = !show_wireframe;
+		on_set(&show_wireframe);
+		return true;
+	case 'S':
+		if (ke.get_modifiers() != 0)
+			return false;
+		show_surface = !show_surface;
+		on_set(&show_surface);
 		return true;
 	case 'G' :
 		if (ke.get_modifiers() != 0)
@@ -265,8 +326,6 @@ void gl_implicit_surface_drawable::create_gui()
 	if (begin_tree_node("Contouring", contouring_type)) {
 		align("\a");
 		add_member_control(this, "normal computation", normal_computation_type, "gradient,face,corner,corner_gradient");
-		add_member_control(this, "gradient normals", show_gradient_normals, "check");
-		add_member_control(this, "mesh normals", show_mesh_normals, "check");
 		add_member_control(this, "threshold", normal_threshold, "value_slider", "min=-1;max=1;ticks=true");
 		add_member_control(this, "contouring", contouring_type, "dropdown", "enums='marching cubes,dual contouring'");
 		add_member_control(this, "consistency_threshold", consistency_threshold, "value_slider", "min=0.00001;max=1;log=true;ticks=true");
@@ -278,24 +337,61 @@ void gl_implicit_surface_drawable::create_gui()
 		align("\b");
 	}
 
-	if (begin_tree_node("Visualization", wireframe)) {
+	if (begin_tree_node("Visualization", show_wireframe)) {
 		align("\a");
-		add_member_control(this, "wireframe", wireframe, "check");
-		if (begin_tree_node("Material", material)) {
+		bool show = begin_tree_node("vertices", srs, false, "level=3;options='w=130';align=' '");
+		add_member_control(this, "show", show_vertices, "toggle", "w=62");
+		if (show) {
+			align("\a");
+			add_gui("render style", srs);;
+			align("\b");
+			end_tree_node(srs);
+		}
+
+		show = begin_tree_node("wireframe", crs, false, "level=3;options='w=130';align=' '");
+		add_member_control(this, "show", show_wireframe, "toggle", "w=62");
+		if (show) {
+			align("\a");
+			add_gui("render style", crs);
+			align("\b");
+			end_tree_node(crs);
+		}
+		show = begin_tree_node("surface", material, false, "level=3;options='w=130';align=' '");
+		add_member_control(this, "show", show_surface, "toggle", "w=62");
+		if (show) {
 			align("\a");
 			add_gui("material", material);
 			align("\b");
+			end_tree_node(material);
 		}
-		add_member_control(this, "&box", show_box, "check", "w=50;shortcut='b'", " ");
-		add_member_control(this, "scale", box_scale, "value_slider", "w=120;min=0.01;max=100;ticks=true;log=true");
-		add_gui("box", box, "",	"options='w=100;min=-10;max=10;step=0.01;ticks=true;align=\"BL\"';align_col=' '"); align("\n");
-		add_member_control(this, "sampling_&grid", show_sampling_grid, "check", "shortcut='g'");
-		add_member_control(this, "sampling_&points", show_sampling_locations, "check", "shortcut='p'");
-		add_member_control(this, "mini_box", show_mini_box, "check");
-		add_member_control(this, "ix",ix,"value_slider", "min=0;max=10;ticks=true");
-		add_member_control(this, "iy",iy,"value_slider", "min=0;max=10;ticks=true");
-		add_member_control(this, "iz",iz,"value_slider", "min=0;max=10;ticks=true");
-		end_tree_node(wireframe);
+		show = begin_tree_node("normals", ars, false, "level=3;options='w=80';align=' '");
+		add_member_control(this, "gradient", show_gradient_normals, "toggle", "w=62", " ");
+		add_member_control(this, "mesh", show_mesh_normals, "toggle", "w=62");
+		if (show) {
+			align("\a");
+			add_gui("render_style", ars);
+			align("\b");
+			end_tree_node(ars);
+		}
+		show = begin_tree_node("box", brs, false, "level=3;options='w=60';align=' '");
+		add_member_control(this, "show", show_box, "toggle", "w=62", " ");
+		add_member_control(this, "mini", show_mini_box, "toggle", "w=62");
+		if (show) {
+			align("\a");
+			add_decorator("box", "heading", "level=4");
+			add_gui("box", box, "", "options='w=100;min=-10;max=10;step=0.01;ticks=true;align=\"BL\"';align_col=' '"); align("\n");
+			add_decorator("render style", "heading", "level=4");
+			add_gui("render style", brs);
+			align("\b");
+			end_tree_node(material);
+		}
+		add_member_control(this, "ix", ix, "value_slider", "min=0;max=10;ticks=true");
+		add_member_control(this, "iy", iy, "value_slider", "min=0;max=10;ticks=true");
+		add_member_control(this, "iz", iz, "value_slider", "min=0;max=10;ticks=true");
+		add_member_control(this, "sampling_points", show_sampling_locations, "check");
+		add_member_control(this, "sampling_grid", show_sampling_grid, "check");
+		add_member_control(this, "sampling_grid_opacity", sampling_grid_alpha, "value_slider", "min=0;max=1;ticks=true");
+		end_tree_node(show_wireframe);
 		align("\b");
 	}
 }
@@ -312,7 +408,7 @@ bool gl_implicit_surface_drawable::self_reflect(cgv::reflect::reflection_handler
 		rh.reflect_member("ix", ix) &&
 		rh.reflect_member("iy", iy) &&
 		rh.reflect_member("iz", iz) &&
-		rh.reflect_member("wireframe", wireframe) &&
+		rh.reflect_member("show_wireframe", show_wireframe) &&
 		rh.reflect_member("show_sampling_grid", show_sampling_grid) &&
 		rh.reflect_member("show_sampling_locations", show_sampling_locations) &&
 		rh.reflect_member("show_box", show_box) &&
@@ -326,26 +422,18 @@ bool gl_implicit_surface_drawable::self_reflect(cgv::reflect::reflection_handler
 
 void gl_implicit_surface_drawable::on_set(void* p)
 {
-	if (p == &box_scale) {
-		if (find_control(box.ref_min_pnt()[0])) {
-			for (int i = 0; i < 3; ++i) {
-				find_control(box.ref_min_pnt()[i])->set("min", -box_scale);
-				find_control(box.ref_min_pnt()[i])->set("max", box_scale);
-				find_control(box.ref_max_pnt()[i])->set("min", -box_scale);
-				find_control(box.ref_max_pnt()[i])->set("max", box_scale);
-			}
-		}
-	}
 	if (p == &res)
 		resolution_change();
 	else if (p == &contouring_type || p == &res || p == &normal_threshold || p == &consistency_threshold || 
 		 p == &max_nr_iters || p == &normal_computation_type || p == &epsilon ||
 		 p == &grid_epsilon || (p >= &box && p < &box+1) )
 		   post_rebuild();
-	else if (p == &ix || p == &iy || p == &iz || p == &wireframe || p == &show_sampling_grid ||
+	else if (p == &ix || p == &iy || p == &iz || p == &show_vertices || p == &show_wireframe || p == &show_surface || 
+		p == &show_sampling_grid || p == &sampling_grid_alpha || 
 	    p == &show_sampling_locations || p == &show_box || p == &show_mini_box || 
 		 p == &show_gradient_normals || p == &show_mesh_normals || 
-		(p >= &material && p < &material+1))
+		(p >= &material && p < &material+1) || (p >= &srs && p < &srs + 1) || 
+		(p >= &crs && p < &crs + 1) || (p >= &brs && p < &brs + 1) || (p >= &ars && p < &ars + 1))
 			post_redraw();
 	update_member(p);
 }
