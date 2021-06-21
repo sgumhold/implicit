@@ -325,7 +325,7 @@ void gl_implicit_surface_drawable::create_gui()
 
 	if (begin_tree_node("Contouring", contouring_type)) {
 		align("\a");
-		add_member_control(this, "normal computation", normal_computation_type, "gradient,face,corner,corner_gradient");
+		add_member_control(this, "normal computation", normal_computation_type, "dropdown", "enums='gradient,face,corner,corner_gradient'");
 		add_member_control(this, "threshold", normal_threshold, "value_slider", "min=-1;max=1;ticks=true");
 		add_member_control(this, "contouring", contouring_type, "dropdown", "enums='marching cubes,dual contouring'");
 		add_member_control(this, "consistency_threshold", consistency_threshold, "value_slider", "min=0.00001;max=1;log=true;ticks=true");
