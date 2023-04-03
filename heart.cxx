@@ -11,15 +11,15 @@ public:
 		return t1*t1*t1-t2;
 	}
 	vec_type evaluate_gradient(const pnt_type& p) const {
-		const T x = p[0];
-		const T y = p[1];
-		const T z = p[2];
-		const T t1 = x*x;
-		const T t3 = y*y;
-		const T t4 = z*z;
-		const T t5 = 2.0*t1+t3+t4-1.0;
-		const T t6 = t5*t5;
-		return vec_type(12.0*t6*x-0.4*x*t4*z, 6.0*t6*y-2.0*y*t4*z, 6.0*t6*z-0.6*t1*t4-3.0*t3*t4);
+		const T& x = p(0);
+		T x2 = x * x;
+		const T& y = p(1);
+		T y2 = y * y;
+		const T& z = p(2);
+		T z2 = z * z;
+		T t1 = x2+y2+z2 - 1.0;
+		T z3 = z2*z;
+		return 6 * t1 * t1 * p - vec_type(0.4*x*z3, 2.0*y*z3, 3.0*(0.2*x2+y2)*z2);
 	}
 };
 
