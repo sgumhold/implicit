@@ -7,6 +7,7 @@
 #include <cgv/gui/mouse_event.h>
 #include <cgv/base/register.h>
 #include <cgv/utils/file.h>
+#include <cgv_reflect_types/media/axis_aligned_box.h>
 #include <fstream>
 
 using namespace cgv::gui;
@@ -16,13 +17,23 @@ using namespace cgv::signal;
 using namespace cgv::render::gl;
 using namespace cgv::media;
 
+cgv::reflect::enum_reflection_traits<ContouringType> get_reflection_traits(const ContouringType&)
+{
+	return cgv::reflect::enum_reflection_traits<ContouringType>("marching_cubes,dual_contouring");
+}
+cgv::reflect::enum_reflection_traits<NormalComputationType> get_reflection_traits(const NormalComputationType&)
+{
+	return cgv::reflect::enum_reflection_traits<NormalComputationType>("gradient,face,corner,corner_gradient");
+}
+
+
 gl_implicit_surface_drawable::gl_implicit_surface_drawable(const std::string& name) : cgv::base::node(name)
 {
 }
 
 std::string gl_implicit_surface_drawable::get_type_name() const
 {
-	return "implicit surface";
+	return "gl_implicit_surface_drawable";
 }
 
 void gl_implicit_surface_drawable::toggle_range()
@@ -327,10 +338,10 @@ void gl_implicit_surface_drawable::create_gui()
 		align("\a");
 		add_member_control(this, "normal computation", normal_computation_type, "dropdown", "enums='gradient,face,corner,corner_gradient'");
 		add_member_control(this, "threshold", normal_threshold, "value_slider", "min=-1;max=1;ticks=true");
-		add_member_control(this, "contouring", contouring_type, "dropdown", "enums='marching cubes,dual contouring'");
+		add_member_control(this, "contouring", contouring_type, "dropdown", "enums='marching_cubes,dual_contouring'");
 		add_member_control(this, "consistency_threshold", consistency_threshold, "value_slider", "min=0.00001;max=1;log=true;ticks=true");
 		add_member_control(this, "max_nr_iters", max_nr_iters, "value_slider", "min=1;max=20;ticks=true");
-		add_member_control(this, "res", res, "value_slider", "min=4;max=100;log=true;ticks=true");
+		add_member_control(this, "resolution", res, "value_slider", "min=4;max=100;log=true;ticks=true");
 		add_member_control(this, "epsilon", epsilon, "value_slider", "min=0;max=0.001;log=true;ticks=true");
 		add_member_control(this, "grid_epsilon", grid_epsilon, "value_slider", "min=0;max=0.5;log=true;ticks=true");
 		end_tree_node(contouring_type);
@@ -398,13 +409,14 @@ void gl_implicit_surface_drawable::create_gui()
 
 bool gl_implicit_surface_drawable::self_reflect(cgv::reflect::reflection_handler& rh)
 {
-	return 
-//		rh.reflect_member("box", box) &&
-	//	rh.reflect_member("contouring_type", contouring_type) &&
+	return
+		rh.reflect_member("box", box) &&
+		rh.reflect_member("resolution", res) &&
+		rh.reflect_member("contouring_type", contouring_type) &&
 		rh.reflect_member("normal_threshold", normal_threshold) &&
 		rh.reflect_member("consistency_threshold", consistency_threshold) &&
 		rh.reflect_member("max_nr_iters", max_nr_iters) &&
-//		rh.reflect_member("normal_computation_type", normal_computation_type) &&
+		rh.reflect_member("normal_computation_type", normal_computation_type) &&
 		rh.reflect_member("ix", ix) &&
 		rh.reflect_member("iy", iy) &&
 		rh.reflect_member("iz", iz) &&
@@ -412,6 +424,8 @@ bool gl_implicit_surface_drawable::self_reflect(cgv::reflect::reflection_handler
 		rh.reflect_member("show_sampling_grid", show_sampling_grid) &&
 		rh.reflect_member("show_sampling_locations", show_sampling_locations) &&
 		rh.reflect_member("show_box", show_box) &&
+		rh.reflect_member("show_surface", show_surface) &&
+		rh.reflect_member("show_vertices", show_vertices) &&
 		rh.reflect_member("show_mini_box", show_mini_box) &&
 		rh.reflect_member("show_gradient_normals", show_gradient_normals) &&
 		rh.reflect_member("show_mesh_normals", show_mesh_normals) &&

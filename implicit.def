@@ -1,6 +1,39 @@
-// this is the default configuration file valid for a 1400x1050 resolution
+// this is the default configuration file valid for a 1920x1080 resolution
 // copy it to implicit.cfg and define your own values
-//show all
-name(main):x=4;y=30;w=800;h=600;bg_clr_idx=-1;show_stats=false;state=fullscreen(2)
-type(scene):x=808;y=30;w=592;h=600
-//type(scene):file_name="D:\Projects\project\implicit_surfaces\examples\heart.isd"
+show all
+name(Main):x=0;y=30;w=1400;h=1080;bg_clr_idx=4;show_stats=false
+name(Scene):x=1400;y=30;w=520;h=600
+type(console):x=1396;y=630;w=540;h=460
+
+//name(Scene):file_name="D:\Projects\project\implicit_surfaces\examples\heart.isd"
+
+// posible contouring_type values: marching_cubes,dual_contouring
+name(Implicit):contouring_type=marching_cubes
+// posible normal_computation types: gradient,face,corner,corner_gradient
+name(Implicit):normal_computation_type=gradient
+// sampling grid
+name(Implicit):box.minp="-1 -1 -1";box.maxp="1 1 1"
+name(Implicit):resolution=50
+// marching cubes extraction parameters
+name(Implicit):grid_epsilon=0.01
+// dual contouring extraction parameters
+name(Implicit):epsilon=1e-8
+name(Implicit):normal_threshold=0.73
+name(Implicit):consistency_threshold=0.01
+name(Implicit):max_nr_iters=8
+
+// rendering of implicit surface
+name(Implicit):show_vertices=false
+name(Implicit):show_wireframe=true
+name(Implicit):show_surface=true
+name(Implicit):show_gradient_normals=false
+name(Implicit):show_mesh_normals=false
+// rendering of grid
+name(Implicit):show_box=true
+name(Implicit):show_sampling_grid=false
+name(Implicit):show_sampling_locations=false
+// debug grid cell
+name(Implicit):show_mini_box=false
+name(Implicit):ix=0
+name(Implicit):iy=0
+name(Implicit):iz=0
