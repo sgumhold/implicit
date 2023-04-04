@@ -1,6 +1,7 @@
 #pragma once
 
 #include "implicit_base.h"
+#include <cgv/base/register.h>
 #include <cgv/gui/text_editor.h>
 #include "gl_implicit_surface_drawable.h"
 
@@ -10,6 +11,7 @@ class scene :
 	public gl_implicit_surface_drawable::F,
 	public scene_update_handler,
 	public drawable,
+	public argument_handler,
 	public provider,
 	public text_editor_callback_handler
 {
@@ -74,6 +76,8 @@ public:
 	scene(const std::string& _name, const std::string& _description = "S");
 	/// called to unregister derived guis and drawables
 	void unregister();
+	/// interpret command line as scene file
+	void handle_args(std::vector<std::string>& args);
 	/// overload to return the type name of this object
 	std::string get_type_name() const;
 	///

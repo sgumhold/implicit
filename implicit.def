@@ -1,7 +1,7 @@
 // this is the default configuration file valid for a 1920x1080 resolution
 // copy it to implicit.cfg and define your own values
 show all
-name(Main):x=0;y=30;w=1400;h=1080;bg_clr_idx=4;show_stats=false
+name(Main):x=0;y=30;w=1400;h=1080;bg_index=4;show_stats=false
 name(Scene):x=1400;y=30;w=520;h=600
 type(console):x=1396;y=630;w=540;h=460
 

@@ -1,3 +1,8 @@
-o<root>[o=0.35](
-  +(S,u[s=0.5](Y))
+u[s=0.56](
+  *(
+    u[s=1.25](t[dx=-0.75](box)),
+    outline<root>[o=0.18](
+      +(sphere,u[s=0.7](cylinder))
+    )
+  )
 )

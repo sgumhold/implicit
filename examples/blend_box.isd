@@ -1,6 +1,12 @@
-s<root>[sx=0.48;sy=0.5;sz=0.48](
-  b[n=2;r0=1;r1=1](
-    s[sx=0.5;sy=0.5;sz=4](B),
-    r[](s[sx=0.5;sy=0.5;sz=4](B))
+scale<root>[sx=0.48;sy=0.5;sz=0.48](
+  blend[n=2;r0=1;r1=1](
+    scale[sx=0.5;sy=0.5;sz=4](
+      box
+    ),
+    rotate[](
+      scale[sx=0.5;sy=0.5;sz=4](
+        box
+      )
+    )
   )
 )

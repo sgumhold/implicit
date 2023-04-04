@@ -1,14 +1,11 @@
 % allow for numerical gradients
 g<root>[](
-  % level set navigator
-  l[](
-    % translation
-    t[dx=0;dz=-0.15](
-      % scale
-      s[](
-        % heart primitive
-        H
+   level_set[]( 
+      t[dx=0;dy=0;dz=-0.15](
+         % scale
+         u[s=0.8](
+           heart
+         )
       )
-    )
-  )
+   )
 )

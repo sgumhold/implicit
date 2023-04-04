@@ -561,6 +561,17 @@ void scene::update_description()
 		reconstruct_description();
 }
 
+/// interpret command line as scene file
+void scene::handle_args(std::vector<std::string>& args)
+{
+	for (auto a : args) {
+		if (file::exists(a)) {
+			set("file_name", a);
+		}
+	}
+}
+
+
 /// overload to return the type name of this object
 std::string scene::get_type_name() const 
 {
