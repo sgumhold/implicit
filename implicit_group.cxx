@@ -6,7 +6,7 @@ template <typename T>
 void implicit_group<T>::set_update_handler(scene_update_handler* uh)
 {
 	implicit_base<T>::set_update_handler(uh);
-	for (size_t i = 0; i<get_nr_children(); ++i)
+	for (unsigned i = 0; i<get_nr_children(); ++i)
 		get_implicit_child(i)->set_update_handler(uh);
 }
 
@@ -43,7 +43,7 @@ const implicit_base<T>* implicit_group<T>::get_implicit_child(unsigned i) const
 template <typename T>
 void implicit_group<T>::on_set(void* member_ptr)
 {
-	for (size_t i = 0; i < get_nr_children(); ++i) {
+	for (unsigned i = 0; i < get_nr_children(); ++i) {
 		bool& toggle = ref_tree_node_visible_flag(*get_implicit_child(i));
 		if (member_ptr == &child_visible_in_gui[i]) {
 			toggle = (bool&)child_visible_in_gui[i];
@@ -64,7 +64,7 @@ void implicit_group<T>::on_set(void* member_ptr)
 template <typename T>
 unsigned int implicit_group<T>::append_child(base_ptr child)
 {
-	size_t i = group::append_child(child);
+	unsigned i = group::append_child(child);
 	child_visible_in_gui.push_back(1);
 	return i;
 }
@@ -80,7 +80,7 @@ typename implicit_group<T>::clr_type implicit_group<T>::compose_color(const pnt_
 	default: {
 		clr_type result(0, 0, 0, 0);
 		for (size_t i = 0; i < n; ++i)
-			result += 1.0f / float(n) * get_implicit_child(i)->evaluate_color(p);
+			result += T(1) / T(n) * get_implicit_child(unsigned(i))->evaluate_color(p);
 		return result;
 	}
 	}
@@ -108,7 +108,7 @@ template <typename T>
 void implicit_group<T>::create_gui()
 {
 	align("\a");
-	for (size_t i=0; i<get_nr_children(); ++i) {
+	for (unsigned i=0; i<get_nr_children(); ++i) {
 		implicit_base<T>* child_ptr = get_implicit_child(i);
 		ref_tree_node_visible_flag(*child_ptr) = (bool&)child_visible_in_gui[i];
 
@@ -141,7 +141,7 @@ template <typename T>
 bool implicit_group<T>::init(context& ctx)
 {
 	bool success = true;
-	for (size_t i=0; i<get_nr_children(); ++i)
+	for (unsigned i=0; i<get_nr_children(); ++i)
 		success = get_implicit_child(i)->init(ctx) && success;
 	return success;
 }

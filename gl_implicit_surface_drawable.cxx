@@ -46,8 +46,8 @@ void gl_implicit_surface_drawable::toggle_range()
 void gl_implicit_surface_drawable::adjust_range()
 {
 	// prepare private members
-	dvec3 p = box.get_min_pnt();
-	dvec3 d = box.get_extent();
+	cgv::dvec3 p = box.get_min_pnt();
+	cgv::dvec3 d = box.get_extent();
 	d(0) /= (res - 1); d(1) /= (res - 1); d(2) /= (res - 1);
 	
 	// prepare progression
@@ -99,15 +99,15 @@ void gl_implicit_surface_drawable::export_volume()
 	if (os.fail())
 		return;
 	os << "Size:      " << res << ", " << res << ", " << res << std::endl;
-	dvec3 scaling = box.get_extent(); // / dvec3(res, res, res);
+	cgv::dvec3 scaling = box.get_extent(); // / dvec3(res, res, res);
 
 	os << "Spacing:   " << scaling(0) << ", " << scaling(1) << ", " << scaling(2) << std::endl;
 	os.close();
 
 	std::vector<unsigned char> data;
 	// prepare private members
-	dvec3 p = box.get_min_pnt();
-	dvec3 d = box.get_extent();
+	cgv::dvec3 p = box.get_min_pnt();
+	cgv::dvec3 d = box.get_extent();
 	d(0) /= (res - 1); d(1) /= (res - 1); d(2) /= (res - 1);
 
 	// prepare progression
@@ -197,10 +197,10 @@ bool gl_implicit_surface_drawable::handle(cgv::gui::event& e)
 			if (me.get_action() == cgv::gui::MA_PRESS) {
 				if (me.get_modifiers() == cgv::gui::EM_CTRL) {
 					if (me.get_button() == cgv::gui::MB_LEFT_BUTTON) {
-						dvec3 p;
+						cgv::dvec3 p;
 						if (get_world_location(me.get_x(), me.get_y(), *view_ptr, p)) {
 							// and define mini box location such that it includes the picked location
-							dvec3 q = (p - box.get_min_pnt())/(1.0/(res-1)*box.get_extent());
+							cgv::dvec3 q = (p - box.get_min_pnt())/(1.0/(res-1)*box.get_extent());
 							ix = int(q(0));
 							if (ix < 0)
 								ix = 0;

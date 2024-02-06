@@ -45,15 +45,15 @@ struct transformation : public implicit_group<T>
 	void draw(context& ctx)
 	{
 		if (show_axes) {
-			static mat3 I; I.identity();
-			static mat3 Z; Z.zeros();
+			static cgv::mat3 I; I.identity();
+			static cgv::mat3 Z; Z.zeros();
 			static arrow_render_style ars;
 			ars.radius_relative_to_length = 0.025f;
 			auto& ar = cgv::render::ref_arrow_renderer(ctx);
 			ar.set_render_style(ars);
 			ar.set_position_array(ctx, &Z.col(0), 3);
 			ar.set_direction_array(ctx, &I.col(0), 3);
-			ar.set_color_array(ctx, reinterpret_cast<const rgb*>(&I.col(0)), 3);
+			ar.set_color_array(ctx, reinterpret_cast<const cgv::rgb*>(&I.col(0)), 3);
 			ar.render(ctx, 0, 3);
 			//glPushMatrix();
 			//glEnable(GL_COLOR_MATERIAL);
@@ -349,7 +349,7 @@ struct shear : public transformation<T>
 		//};
 		//glMultMatrixd(M);
 		ctx.push_modelview_matrix();
-		dmat4 M;
+		cgv::dmat4 M;
 		M.identity();
 		M(0, 1) = h_xy;
 		M(0, 2) = h_xz;

@@ -17,11 +17,11 @@ public:
 	/// standard constructor
 	meta_balls() : r(1) {
 		if (!meta_balls_srs_initialized) {
-			meta_balls_srs.material.set_diffuse_reflectance(rgb(0.5f, 0.5f, 0.5f));
-			meta_balls_srs.material.set_specular_reflectance(rgb(0.5f, 0.5f, 0.5f));
+			meta_balls_srs.material.set_diffuse_reflectance (cgv::rgb(0.5f, 0.5f, 0.5f));
+			meta_balls_srs.material.set_specular_reflectance(cgv::rgb(0.5f, 0.5f, 0.5f));
 			meta_balls_srs.material.set_ambient_occlusion(0.3f);
 			meta_balls_srs.material.set_roughness(0.2f);
-			meta_balls_srs.surface_color = rgb(0.5f, 0.5f, 0.5f);
+			meta_balls_srs.surface_color = cgv::rgb(0.5f, 0.5f, 0.5f);
 			meta_balls_srs_initialized = true;
 		}
 		show_spheres = false;
@@ -88,7 +88,7 @@ public:
 		
 		auto& sr = cgv::render::ref_sphere_renderer(ctx);
 		sr.set_render_style(meta_balls_srs);
-		std::vector<vec3> P;
+		std::vector<cgv::vec3> P;
 		std::vector<float> R;
 		for (size_t i = 0; i < points.size(); ++i) {
 			P.push_back(points[i]);
