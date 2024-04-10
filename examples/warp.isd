@@ -1,0 +1,13 @@
+numeric_gradient[epsilon=0.001;numerical=true](
+  uniform_scaling[s=0.12](
+    bend[preserved_coordinate=1;bend=50;l=4](
+      twist[theta=160;l=4](
+        taper[l=4](
+          scale[sz=8](
+            box
+          )
+        )
+      )
+    )
+  )
+)
