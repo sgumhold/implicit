@@ -5,20 +5,26 @@
 template <typename T>
 class taper_node : public implicit_group<T>
 {
+	unsigned taper_coordinate  = 2;
 	crd_type r0 = 1, r1 = 2, l = 2;
 public:
 	taper_node() { gui_color = 0xff8000; }
-	pnt_type warp(const pnt_type& p) const {
+	pnt_type warp(const pnt_type& q) const {
+		unsigned i = (taper_coordinate + 1) % 3, j = (taper_coordinate + 2) % 3;
 		crd_type lambda = 0;
-		if (p[2] > -l) {
-			if (p[2] > l)
+		if (q[taper_coordinate] > -l) {
+			if (q[taper_coordinate] > l)
 				lambda = 1;
 			else {
-				lambda = (p[2] + l) / (2 * l);
+				lambda = (q[taper_coordinate] + l) / (2 * l);
 			}
 		}
 		crd_type r = (1 - lambda) * r0 + lambda * r1;
-		return pnt_type(p[0] / r, p[1] / r, p[2]);
+		pnt_type p;
+		p[taper_coordinate] = q[taper_coordinate];
+		p[i] = q[i] / r;
+		p[j] = q[j] / r;
+		return p;
 	}
 	T evaluate(const pnt_type& p) const {
 		if (get_nr_children() == 0)
@@ -32,6 +38,7 @@ public:
 	}
 	bool self_reflect(cgv::reflect::reflection_handler& rh) {
 		return implicit_group<T>::self_reflect(rh) &&
+			rh.reflect_member("taper_coordinate", taper_coordinate)&&
 			rh.reflect_member("l", l)&&
 			rh.reflect_member("r0", r0)&&
 			rh.reflect_member("r1", r1);
@@ -39,6 +46,7 @@ public:
 	/// simple gui to adjust blending width
 	void create_gui()
 	{
+		add_member_control(this, "taper_coordinate", taper_coordinate, "value_slider", "min=0;max=2;ticks=true");
 		add_member_control(this, "l", l, "value_slider", "min=0.1;max=10;log=true;ticks=true");
 		add_member_control(this, "r0", r0, "value_slider", "min=0.1;max=10;log=true;ticks=true");
 		add_member_control(this, "r1", r1, "value_slider", "min=0.1;max=10;log=true;ticks=true");
@@ -49,21 +57,27 @@ public:
 template <typename T>
 class twist_node : public implicit_group<T>
 {
+	unsigned twist_coordinate = 2;
 	crd_type l = 1, theta = 180;
 public:
 	twist_node() { gui_color = 0xff8000; }
-	pnt_type warp(const pnt_type& p) const {
+	pnt_type warp(const pnt_type& q) const {
+		unsigned i = (twist_coordinate + 1) % 3, j = (twist_coordinate + 2) % 3;
 		crd_type lambda = 0;
-		if (p[2] > -l) {
-			if (p[2] > l)
+		if (q[twist_coordinate] > -l) {
+			if (q[twist_coordinate] > l)
 				lambda = 1;
 			else {
-				lambda = (p[2] + l) / (2 * l);
+				lambda = (q[twist_coordinate] + l) / (2 * l);
 			}
 		}
-		crd_type alpha = lambda * theta * M_PI/180;
+		crd_type alpha = lambda * theta * M_PI / 180;
 		crd_type ca = cos(alpha), sa = sin(alpha);
-		return pnt_type(ca*p[0]+sa*p[1], -sa*p[0]+ca*p[1], p[2]);
+		pnt_type p;
+		p[twist_coordinate] = q[twist_coordinate];
+		p[i] = ca * q[i] + sa * q[j];
+		p[j] = -sa * q[i] + ca * q[j];
+		return p;
 	}
 	T evaluate(const pnt_type& p) const {
 		if (get_nr_children() == 0)
@@ -77,12 +91,14 @@ public:
 	}
 	bool self_reflect(cgv::reflect::reflection_handler& rh) {
 		return implicit_group<T>::self_reflect(rh) &&
+			rh.reflect_member("twist_coordinate", twist_coordinate)&&
 			rh.reflect_member("theta", theta)&&
 			rh.reflect_member("l", l);
 	}
 	/// simple gui to adjust blending width
 	void create_gui()
 	{
+		add_member_control(this, "twist_coordinate", twist_coordinate, "value_slider", "min=0;max=2;ticks=true");
 		add_member_control(this, "theta", theta, "value_slider", "min=-360;max=360;ticks=true");
 		add_member_control(this, "l", l, "value_slider", "min=0.1;max=10;log=true;ticks=true");
 		implicit_group<T>::create_gui();
