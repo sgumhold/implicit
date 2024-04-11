@@ -84,8 +84,8 @@ void knot_vector<T>::on_set(void* member_ptr)
 			}
 		}
 	}
-	update_member(member_ptr);
-	update_scene();
+	base::update_member(member_ptr);
+	base::update_scene();
 }
 
 template <typename T>
@@ -98,7 +98,7 @@ void knot_vector<T>::create_gui()
 	add_member_control(this, "pnt_idx", pnt_idx, "value_slider", "min=0;max=1;ticks=true");
 	find_control(pnt_idx)->set("max", (int)points.size() - 1);
 
-	connect_copy(add_button("append")->click,
+	connect_copy(base::add_button("append")->click,
 		cgv::signal::rebind(this, &knot_vector<T>::append_point, cgv::signal::_r(p)));
 
 	add_member_control(this, "x", p(0), "value_slider", "min=-5;max=5;ticks=true");
@@ -106,4 +106,5 @@ void knot_vector<T>::create_gui()
 	add_member_control(this, "z", p(2), "value_slider", "min=-5;max=5;ticks=true");
 }
 
+template class knot_vector<float>;
 template class knot_vector<double>;

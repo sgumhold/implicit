@@ -18,12 +18,23 @@ template <typename T, typename P = T, typename C = float>
 class mls_surface : public implicit_primitive<T>
 {
 public:
+	/// main templated superclass which we want to inherit stuff from
+	typedef implicit_primitive<T> base;
+		using typename base::vec_type;
+		using typename base::pnt_type;
+		using base::gui_color;
+		using base::evaluate_gradient;
+		using base::add_gui;
+		using base::add_member_control;
+
 	typedef fvec<P,3> P3d;
 	typedef fvec<P,3> V3d;
 	typedef cgv::media::color<C, cgv::media::RGB> Rgb;
+
 private:
 	mutable P3d last_p;
 	mutable V3d last_nml;
+
 protected:
 	ANNpointSet* ann;
 	P h;
@@ -36,6 +47,7 @@ protected:
 	string file_name;
 	float point_size;
 	void build_ann();
+
 public:
 	mls_surface();
 	~mls_surface();

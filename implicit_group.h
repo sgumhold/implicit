@@ -18,6 +18,15 @@ enum GroupColorMode
 template <typename T>
 class implicit_group : public group, public implicit_base<T>
 {
+public:
+	/// main templated superclass which we want to inherit stuff from
+	typedef implicit_base<T> base;
+		using typename base::pnt_type;
+		using typename base::clr_type;
+		using base::color;
+		using base::update_scene;
+		using base::update_member;
+
 protected:
 	/// access to implicit base interface of children
 	implicit_base<T>* get_implicit_child(unsigned i);

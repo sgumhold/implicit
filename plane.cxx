@@ -3,6 +3,16 @@
 template <typename T>
 struct plane : public implicit_primitive<T>
 {
+	/// main templated superclass which we want to inherit stuff from
+	typedef implicit_primitive<T> base;
+		using typename base::vec_type;
+		using typename base::pnt_type;
+		using typename base::clr_type;
+		using base::gui_color;
+		using base::evaluate_gradient;
+		using base::add_gui;
+		using base::add_member_control;
+
 	vec_type normal;
 	double   distance;
 
@@ -17,13 +27,13 @@ struct plane : public implicit_primitive<T>
 			rh.reflect_member("nx", normal(0)) &&
 			rh.reflect_member("ny", normal(1)) &&
 			rh.reflect_member("nz", normal(2)) &&
-			implicit_primitive<T>::self_reflect(rh);
+			base::self_reflect(rh);
 	}
 
 	void on_set(void* member_ptr)
 	{
-		update_member(member_ptr);
-		update_scene();
+		base::update_member(member_ptr);
+		base::update_scene();
 	}
 	std::string get_type_name() const { return "plane"; }
 	/// evaluate the implicit function itself, this must be overloaded

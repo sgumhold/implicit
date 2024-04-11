@@ -4,6 +4,17 @@
 template <typename T>
 class numeric_gradient : public implicit_group<T>
 {
+public:
+	/// main templated superclass which we want to inherit stuff from
+	typedef implicit_group<T> base;
+		using typename base::vec_type;
+		using typename base::pnt_type;
+		using base::gui_color;
+		using base::get_nr_children;
+		using base::get_implicit_child;
+		using base::evaluate_gradient;
+		using base::add_member_control;
+
 protected:
 	/// store the numeric_gradient
 	T epsilon;

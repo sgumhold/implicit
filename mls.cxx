@@ -41,7 +41,7 @@ void mls_surface<T,P,C>::build_ann()
 		box.add_point(points[i]);
 	}
 	extent = box.get_extent().length();
-	update_member(&extent);
+	base::update_member(&extent);
 	ann = new ANNkd_tree(pa,points.size(),3);
 }
 
@@ -85,7 +85,7 @@ bool mls_surface<T,P,C>::read_obj(const string& _file_name)
 	}
 	file_name = _file_name;
 	build_ann();
-	update_scene();
+	base::update_scene();
 	return true;
 }
 
@@ -108,7 +108,7 @@ void mls_surface<T,P,C>::on_set(void* member_ptr)
 		read(file_name);
 	else 
 		if (!(member_ptr == &h || member_ptr == &file_name || member_ptr == &skip_eval)) {
-			update_description();
+			base::update_description();
 			return;
 		}
 	implicit_primitive<T>::on_set(member_ptr);
@@ -208,12 +208,12 @@ void mls_surface<T,P,C>::draw(context& ctx)
 template <typename T, typename P, typename C>
 void mls_surface<T,P,C>::create_gui()
 {
-	add_view("extent", extent);
+	base::add_view("extent", extent);
 	add_member_control(this, "show_points", show_points, "check"); 
 	add_member_control(this, "skip_eval", skip_eval, "check"); 
 	add_member_control(this, "h", h, "value_slider", "min=0.001;max=1;ticks=true;log=true"); 
 	add_member_control(this, "point_size", point_size, "value_slider", "min=1;max=30;ticks=true;log=true"); 
-	connect_copy(add_button("open")->click, rebind(this, &mls_surface<T,P,C>::open));
+	connect_copy(base::add_button("open")->click, rebind(this, &mls_surface<T,P,C>::open));
 }
 
 scene_factory_registration<mls_surface<double,float,unsigned char> > sfr_mls("mls");

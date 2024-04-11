@@ -44,15 +44,15 @@ template <typename T>
 void implicit_group<T>::on_set(void* member_ptr)
 {
 	for (unsigned i = 0; i < get_nr_children(); ++i) {
-		bool& toggle = ref_tree_node_visible_flag(*get_implicit_child(i));
+		bool& toggle = base::ref_tree_node_visible_flag(*get_implicit_child(i));
 		if (member_ptr == &child_visible_in_gui[i]) {
 			toggle = (bool&)child_visible_in_gui[i];
-			update_description();
+			base::update_description();
 			return;
 		}
 		if (member_ptr == &toggle) {
 			(bool&)(child_visible_in_gui[i]) = toggle;
-			update_description();
+			base::update_description();
 			return;
 		}
 	}
@@ -107,28 +107,28 @@ typename implicit_group<T>::clr_type implicit_group<T>::evaluate_color(const pnt
 template <typename T>
 void implicit_group<T>::create_gui()
 {
-	align("\a");
+	base::align("\a");
 	for (unsigned i=0; i<get_nr_children(); ++i) {
 		implicit_base<T>* child_ptr = get_implicit_child(i);
-		ref_tree_node_visible_flag(*child_ptr) = (bool&)child_visible_in_gui[i];
+		base::ref_tree_node_visible_flag(*child_ptr) = (bool&)child_visible_in_gui[i];
 
 		// add tree node
 		std::string label = std::string("[") + cgv::utils::to_string(i) + "]";
-		bool node_visible = begin_tree_node(label, *child_ptr, (bool&)child_visible_in_gui[i], "level=3;options='w=20';align=' '");
+		bool node_visible = base::begin_tree_node(label, *child_ptr, (bool&)child_visible_in_gui[i], "level=3;options='w=20';align=' '");
 
 		// add gui for child name with gui color of child
 		std::string& child_name = const_cast<std::string&>(child_ptr->get_base()->get_named()->get_name());
-		add_member_control(child_ptr->get_base(), "name", child_name, "", "w=140;label=''", "");
-		find_control(child_name)->set("color", child_ptr->gui_color);
+		base::add_member_control(child_ptr->get_base(), "name", child_name, "", "w=140;label=''", "");
+		base::find_control(child_name)->set("color", child_ptr->gui_color);
 		// add gui for color of child
-		add_member_control(child_ptr->get_base(), "color", child_ptr->color, "", "w=40;label=''");
+		base::add_member_control(child_ptr->get_base(), "color", child_ptr->color, "", "w=40;label=''");
 
 		if (node_visible) {
-			inline_object_gui(get_child(i));
-			end_tree_node(*child_ptr);
+			base::inline_object_gui(get_child(i));
+			base::end_tree_node(*child_ptr);
 		}
 	}
-	align("\b");
+	base::align("\b");
 }
 
 template <typename T>

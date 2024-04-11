@@ -3,7 +3,12 @@
 template <typename T>
 struct heart : public implicit_primitive<T>
 {
-public:
+	/// main templated superclass which we want to inherit stuff from
+	typedef implicit_primitive<T> base;
+		using typename base::vec_type;
+		using typename base::pnt_type;
+		using base::evaluate_gradient;
+
 	std::string get_type_name() const { return "heart"; }
 	T evaluate(const pnt_type& p) const {
 		T t1 = p.sqr_length()-1;

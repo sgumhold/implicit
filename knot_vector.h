@@ -8,6 +8,15 @@
 template <typename T>
 class knot_vector : public implicit_primitive<T>
 {
+public:
+	/// main templated superclass which we want to inherit stuff from
+	typedef implicit_primitive<T> base;
+		using typename base::vec_type;
+		using typename base::pnt_type;
+		using base::find_control;
+		using base::add_member_control;
+		using base::update_member;
+
 protected:
 	// vector of knot locations
 	std::vector<pnt_type> points;

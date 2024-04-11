@@ -3,6 +3,18 @@
 template <typename T>
 class blend_node : public implicit_group<T>
 {
+public:
+	/// main templated superclass which we want to inherit stuff from
+	typedef implicit_group<T> base;
+		using typename base::vec_type;
+		using typename base::pnt_type;
+		using typename base::clr_type;
+		using base::gui_color;
+		using base::get_nr_children;
+		using base::get_implicit_child;
+		using base::evaluate_gradient;
+		using base::add_member_control;
+
 protected:
 	T p;
 	std::vector<T> ri;
@@ -99,7 +111,7 @@ public:
 	}
 	clr_type compose_color(const pnt_type& p) const
 	{
-		return implicit_group<T>::compose_color(p);
+		return base::compose_color(p);
 	}
 	void create_gui()
 	{
@@ -109,7 +121,7 @@ public:
 		for (unsigned int i=0; i<ri.size(); ++i)
 			add_member_control(this, std::string("r")+cgv::utils::to_string(i), ri[i], "value_slider", "min=0;max=10;ticks=true;log=true");
 
-		implicit_group<T>::create_gui();
+		base::create_gui();
 	}
 	std::string get_type_name() const
 	{
@@ -117,5 +129,5 @@ public:
 	}	
 };
 
-scene_factory_registration<blend_node<double> >sfr_blend("blend");
+scene_factory_registration<blend_node<double> > sfr_blend("blend");
 

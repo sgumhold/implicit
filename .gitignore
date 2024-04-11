@@ -1,0 +1,12 @@
+.vscode
+/build/*
+/build
+Debug
+Release
+ipch
+*.vs
+*.aux
+*.log
+*.out
+*.synctex
+*.tps

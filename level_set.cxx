@@ -9,6 +9,17 @@ using namespace cgv::type;
 template <typename T>
 class level_set : public implicit_group<T>
 {
+public:
+	/// main templated superclass which we want to inherit stuff from
+	typedef implicit_group<T> base;
+		using typename base::vec_type;
+		using typename base::pnt_type;
+		using base::gui_color;
+		using base::get_nr_children;
+		using base::get_implicit_child;
+		using base::find_control;
+		using base::add_member_control;
+
 protected:
 	/// store the level
 	T l;
@@ -33,7 +44,7 @@ public:
 				find_control(l)->set("min", -r);
 				find_control(l)->set("max", r);
 			}
-			update_description();
+			base::update_description();
 			return;
 		}
 		implicit_group<T>::on_set(member_ptr);

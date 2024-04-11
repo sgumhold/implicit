@@ -101,7 +101,7 @@ template <typename T>
 void distance_surface<T>::create_gui()
 {
 	if (!gui_title_added) {
-		add_view("distance surface",name)->set("color",0xFF8888);
+		base::add_view("distance surface", base::name)->set("color",0xFF8888);
 		gui_title_added = true;
 	}
 
@@ -110,4 +110,6 @@ void distance_surface<T>::create_gui()
 	skeleton<T>::create_gui();
 }
 
+template class distance_surface<float>;
+template class distance_surface<double>;
 scene_factory_registration<distance_surface<double> > sfr_distance_surface("distance_surface;D");

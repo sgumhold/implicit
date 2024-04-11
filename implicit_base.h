@@ -24,7 +24,7 @@ struct scene_update_handler
 
 /** base implementation for all group nodes*/
 template <typename T>
-class implicit_base : 
+class implicit_base :
 	public drawable,
 	public provider
 {

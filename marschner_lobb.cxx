@@ -5,6 +5,11 @@
 template <typename T>
 struct marschner_lobb :  public implicit_primitive<T>
 {
+	/// main templated superclass which we want to inherit stuff from
+	typedef implicit_primitive<T> base;
+		using typename base::pnt_type;
+		using base::gui_color;
+
 	double alpha;
 	double fM;
 	marschner_lobb() : alpha(0.25), fM(6.0) { gui_color = 0xFF8888; }
@@ -22,16 +27,16 @@ struct marschner_lobb :  public implicit_primitive<T>
 	bool self_reflect(cgv::reflect::reflection_handler& rh)
 	{
 		return
-			implicit_primitive<T>::self_reflect(rh) &&
+			base::self_reflect(rh) &&
 			rh.reflect_member("alpha", alpha) &&
 			rh.reflect_member("fM", fM);
 	}
 
 	void create_gui()
 	{
-		implicit_primitive<T>::create_gui();
-		add_member_control(this, "alpha", alpha, "value_slider", "min=0;max=1;ticks=true");
-		add_member_control(this, "fM", fM, "value_slider", "min=1;max=100;ticks=true;log=true");
+		base::create_gui();
+		base::add_member_control(this, "alpha", alpha, "value_slider", "min=0;max=1;ticks=true");
+		base::add_member_control(this, "fM", fM, "value_slider", "min=1;max=100;ticks=true;log=true");
 	}
 };
 
