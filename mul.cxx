@@ -13,7 +13,7 @@ public:
 	mul_node() { base::gui_color = 0xffff00; }
 	T evaluate(const pnt_type& p) const {
 		T prod = 1;
-		for (size_t i=0; i<get_nr_children(); ++i)
+		for (unsigned i=0; i<get_nr_children(); ++i)
 			prod *= get_implicit_child(i)->evaluate(p);
 		return prod;
 	}

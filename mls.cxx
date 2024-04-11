@@ -42,7 +42,7 @@ void mls_surface<T,P,C>::build_ann()
 	}
 	extent = box.get_extent().length();
 	base::update_member(&extent);
-	ann = new ANNkd_tree(pa,points.size(),3);
+	ann = new ANNkd_tree(pa, (int)points.size(), 3);
 }
 
 template <typename T, typename P, typename C>
@@ -200,7 +200,7 @@ void mls_surface<T,P,C>::draw(context& ctx)
 	glColor3f(0.5f,0.5f,0.5f);
 	glPointSize(point_size);
 	glEnable(GL_POINT_SMOOTH);
-	glDrawArrays(GL_POINTS, 0, points.size());
+	glDrawArrays(GL_POINTS, 0, (GLsizei)points.size());
 	glPopAttrib();
 	glPopClientAttrib();
 }
