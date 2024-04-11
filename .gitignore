@@ -10,3 +10,4 @@ ipch
 *.out
 *.synctex
 *.tps
+/implicit.cfg
