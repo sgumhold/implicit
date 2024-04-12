@@ -27,7 +27,7 @@ std::string implicit_primitive<T>::get_type_name() const
 
 template <typename T>
 void implicit_primitive<T>::create_gui() 
-{
-}
+{}
 
+template class implicit_primitive<float>;
 template class implicit_primitive<double>;

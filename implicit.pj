@@ -10,4 +10,3 @@ addProjectDeps=["cgv_os", "cgv_utils", "cgv_type", "cgv_data", "cgv_base", "cgv_
 addCommandLineArguments=[
 	'config:"'.INPUT_DIR.'/implicit.def"',
 	after("type(shader_config):shader_path='".CGV_DIR."/libs/cgv_gl/glsl'","cg_fltk")];
-

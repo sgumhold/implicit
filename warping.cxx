@@ -5,6 +5,18 @@
 template <typename T>
 class taper_node : public implicit_group<T>
 {
+public:
+	/// main templated superclass which we want to inherit stuff from
+	typedef implicit_group<T> base;
+		using typename base::pnt_type;
+		using typename base::crd_type;
+		using base::gui_color;
+		using base::get_nr_children;
+		using base::get_implicit_child;
+		using base::evaluate_gradient;
+		using base::add_member_control;
+
+protected:
 	unsigned taper_coordinate  = 2;
 	crd_type r0 = 1, r1 = 2, l = 2;
 public:
@@ -37,7 +49,7 @@ public:
 		return "taper_node";
 	}
 	bool self_reflect(cgv::reflect::reflection_handler& rh) {
-		return implicit_group<T>::self_reflect(rh) &&
+		return base::self_reflect(rh) &&
 			rh.reflect_member("taper_coordinate", taper_coordinate)&&
 			rh.reflect_member("l", l)&&
 			rh.reflect_member("r0", r0)&&
@@ -50,13 +62,25 @@ public:
 		add_member_control(this, "l", l, "value_slider", "min=0.1;max=10;log=true;ticks=true");
 		add_member_control(this, "r0", r0, "value_slider", "min=0.1;max=10;log=true;ticks=true");
 		add_member_control(this, "r1", r1, "value_slider", "min=0.1;max=10;log=true;ticks=true");
-		implicit_group<T>::create_gui();
+		base::create_gui();
 	}
 };
 
 template <typename T>
 class twist_node : public implicit_group<T>
 {
+public:
+	/// main templated superclass which we want to inherit stuff from
+	typedef implicit_group<T> base;
+		using typename base::pnt_type;
+		using typename base::crd_type;
+		using base::gui_color;
+		using base::get_nr_children;
+		using base::get_implicit_child;
+		using base::evaluate_gradient;
+		using base::add_member_control;
+
+protected:
 	unsigned twist_coordinate = 2;
 	crd_type l = 1, theta = 180;
 public:
@@ -90,7 +114,7 @@ public:
 		return "twist_node";
 	}
 	bool self_reflect(cgv::reflect::reflection_handler& rh) {
-		return implicit_group<T>::self_reflect(rh) &&
+		return base::self_reflect(rh) &&
 			rh.reflect_member("twist_coordinate", twist_coordinate)&&
 			rh.reflect_member("theta", theta)&&
 			rh.reflect_member("l", l);
@@ -101,13 +125,25 @@ public:
 		add_member_control(this, "twist_coordinate", twist_coordinate, "value_slider", "min=0;max=2;ticks=true");
 		add_member_control(this, "theta", theta, "value_slider", "min=-360;max=360;ticks=true");
 		add_member_control(this, "l", l, "value_slider", "min=0.1;max=10;log=true;ticks=true");
-		implicit_group<T>::create_gui();
+		base::create_gui();
 	}
 };
 
 template <typename T>
 class bend_node : public implicit_group<T>
 {
+public:
+	/// main templated superclass which we want to inherit stuff from
+	typedef implicit_group<T> base;
+		using typename base::pnt_type;
+		using typename base::crd_type;
+		using base::gui_color;
+		using base::get_nr_children;
+		using base::get_implicit_child;
+		using base::evaluate_gradient;
+		using base::add_member_control;
+
+protected:
 	crd_type l = 1, bend = 45;
 	unsigned preserved_coordinate = 2;
 public:
@@ -156,7 +192,7 @@ public:
 		return "bend_node";
 	}
 	bool self_reflect(cgv::reflect::reflection_handler& rh) {
-		return implicit_group<T>::self_reflect(rh) &&
+		return base::self_reflect(rh) &&
 			rh.reflect_member("preserved_coordinate", preserved_coordinate)&&
 			rh.reflect_member("bend", bend)&&
 			rh.reflect_member("l", l);
@@ -167,7 +203,7 @@ public:
 		add_member_control(this, "preserved_coordinate", preserved_coordinate, "value_slider", "min=0;max=2;ticks=true");
 		add_member_control(this, "l", l, "value_slider", "min=0.1;max=10;log=true;ticks=true");
 		add_member_control(this, "bend", bend, "value_slider", "min=-90;max=90;log=true;ticks=true");
-		implicit_group<T>::create_gui();
+		base::create_gui();
 	}
 };
 

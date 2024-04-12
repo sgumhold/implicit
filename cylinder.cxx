@@ -4,6 +4,14 @@
 template <typename T>
 struct cylinder :  public implicit_primitive<T>
 {
+	/// main templated superclass which we want to inherit stuff from
+	typedef implicit_primitive<T> base;
+		using typename base::vec_type;
+		using typename base::pnt_type;
+		using base::gui_color;
+		using base::evaluate_gradient;
+		using base::add_member_control;
+
 	bool use_euclidean_distance;
 	cylinder() : use_euclidean_distance(true) { gui_color = 0xFF8888; }
 	std::string get_type_name() const { return "cylinder"; }

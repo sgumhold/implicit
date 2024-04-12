@@ -65,4 +65,6 @@ typename implicit_base<T>::clr_type implicit_base<T>::evaluate_color(const pnt_t
 	return color;
 }
 
+
+template class implicit_base<float>;
 template class implicit_base<double>;

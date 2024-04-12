@@ -23,6 +23,17 @@
 template <typename T>
 class spatial_blend_node : public implicit_group<T>
 {
+public:
+	/// main templated superclass which we want to inherit stuff from
+	typedef implicit_group<T> base;
+		using typename base::vec_type;
+		using typename base::pnt_type;
+		using base::gui_color;
+		using base::get_nr_children;
+		using base::get_implicit_child;
+		using base::evaluate_gradient;
+		using base::add_member_control;
+
 protected:
 	// width of blending region
 	T width;
@@ -59,14 +70,14 @@ public:
 	}
 	/// description of members
 	bool self_reflect(cgv::reflect::reflection_handler& rh) { 
-		return implicit_group<T>::self_reflect(rh) &&
+		return base::self_reflect(rh) &&
 			rh.reflect_member("width", width); 
 	}
 	/// simple gui to adjust blending width
 	void create_gui()
 	{
 		add_member_control(this, "width", width, "value_slider", "min=0.1;max=10;log=true;ticks=true");
-		implicit_group<T>::create_gui();
+		base::create_gui();
 	}
 	/// return type name
 	std::string get_type_name() const

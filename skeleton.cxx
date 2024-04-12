@@ -5,7 +5,7 @@
 template <typename T>
 void skeleton<T>::append_edge(const edge_type& edge)
 {
-	edge_idx = edges.size();
+	edge_idx = (unsigned)edges.size();
 
 	edges.push_back(edge);
 	if (find_control(edge_idx))
@@ -93,7 +93,7 @@ void skeleton<T>::on_set(void* member_ptr) {
 		}
 	}
 
-	post_redraw();
+	base::post_redraw();
 
 	if (member_ptr == &show_edges || member_ptr == &edge_width) {
 		update_member(member_ptr);
@@ -143,7 +143,7 @@ void skeleton<T>::create_gui()
 	add_member_control(this, "edge_idx", edge_idx, "value_slider", "min=0;max=1;ticks=true");
 	find_control(edge_idx)->set("max",(int)edges.size()-1);
 
-	connect_copy(add_button("append")->click,
+	connect_copy(base::add_button("append")->click,
 		cgv::signal::rebind(this, &skeleton<T>::append_edge, cgv::signal::_r(edge)));
 
 	add_member_control(this, "i", edge.first, "value_slider", "min=0;max=5;ticks=true");
@@ -152,5 +152,5 @@ void skeleton<T>::create_gui()
 	find_control(edge.second)->set("max", points.size() - 1);
 }
 
-
+template class skeleton<float>;
 template class skeleton<double>;

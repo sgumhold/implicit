@@ -9,6 +9,17 @@ static sphere_render_style meta_balls_srs;
 template <typename T>
 class meta_balls :  public knot_vector<T>
 {
+public:
+	/// main templated superclass which we want to inherit stuff from
+	typedef knot_vector<T> base;
+		using typename base::vec_type;
+		using typename base::pnt_type;
+		using base::gui_color;
+		using base::points;
+		using base::pnt_idx;
+		using base::find_control;
+		using base::add_member_control;
+
 protected:
 	std::vector<T> ri;
 	bool show_spheres;
@@ -102,13 +113,13 @@ public:
 	{
 		knot_vector<T>::create_gui();
 		add_member_control(this, "r", r, "value_slider", "min=0;max=5;ticks=true;log=true");
-		bool show = begin_tree_node("spheres", show_spheres, false, "level=3;options='w=130';align=' '");
+		bool show = base::begin_tree_node("spheres", show_spheres, false, "level=3;options='w=130';align=' '");
 		add_member_control(this, "show", show_spheres, "toggle", "w=62");
 		if (show) {
-			align("\a");
-			add_gui("render_style", meta_balls_srs);
-			align("\b");
-			end_tree_node(show_spheres);
+			base::align("\a");
+			base::add_gui("render_style", meta_balls_srs);
+			base::align("\b");
+			base::end_tree_node(show_spheres);
 		}
 	}
 };

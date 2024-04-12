@@ -6,8 +6,8 @@ typename distance_surface<T>::vec_type distance_surface<T>::get_edge_distance_ve
 {
 	vec_type v = p - points[edges[i].first];
 	vec_type e = points[edges[i].second] - points[edges[i].first];
-	T alpha=dot(v, e) / dot(e,e);
-	alpha = dot(v, edge_vector_inv_length[i]);
+	T alpha = T(dot(v, e) / dot(e,e));
+	alpha = (T)dot(v, edge_vector_inv_length[i]);
 	if (alpha <= 0)
 		return v;
 	if (alpha >= 1) {
@@ -86,7 +86,7 @@ template <typename T>
 T distance_surface<T>::evaluate(const pnt_type& p) const
 {
 	vec_type dummy;
-	return put_distance_vector(p,dummy);
+	return (T)put_distance_vector(p,dummy);
 }
 
 template <typename T>
@@ -101,7 +101,7 @@ template <typename T>
 void distance_surface<T>::create_gui()
 {
 	if (!gui_title_added) {
-		add_view("distance surface",name)->set("color",0xFF8888);
+		base::add_view("distance surface", base::name)->set("color",0xFF8888);
 		gui_title_added = true;
 	}
 
@@ -110,4 +110,6 @@ void distance_surface<T>::create_gui()
 	skeleton<T>::create_gui();
 }
 
+template class distance_surface<float>;
+template class distance_surface<double>;
 scene_factory_registration<distance_surface<double> > sfr_distance_surface("distance_surface;D");

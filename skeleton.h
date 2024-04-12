@@ -6,6 +6,16 @@ template <typename T>
 class skeleton : public knot_vector<T>
 {
 public:
+	/// main templated superclass which we want to inherit stuff from
+	typedef knot_vector<T> base;
+		using typename base::vec_type;
+		using typename base::pnt_type;
+		using base::points;
+		using base::find_control;
+		using base::add_member_control;
+		using base::update_member;
+
+public:
 	// edge is a pair of indices
 	typedef std::pair<size_t, size_t> edge_type;
 protected:

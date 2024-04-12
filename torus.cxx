@@ -4,6 +4,14 @@ template <typename T>
 class torus : public implicit_primitive<T>
 {
 public:
+	/// main templated superclass which we want to inherit stuff from
+	typedef implicit_primitive<T> base;
+		using typename base::vec_type;
+		using typename base::pnt_type;
+		using base::gui_color;
+		using base::evaluate_gradient;
+		using base::add_member_control;
+
 	T r;
 	T R;
 	bool use_euclidean_distance;
@@ -51,4 +59,4 @@ public:
 	}
 };
 
-scene_factory_registration<torus<double> >sfr_torus("torus;T");
+scene_factory_registration<torus<double> > sfr_torus("torus;T");

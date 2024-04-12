@@ -4,6 +4,15 @@ template <typename T>
 class tube : public implicit_primitive<T>
 {
 public:
+	/// main templated superclass which we want to inherit stuff from
+	typedef implicit_primitive<T> base;
+		using typename base::vec_type;
+		using typename base::pnt_type;
+		using base::gui_color;
+		using base::evaluate_gradient;
+		using base::add_gui;
+		using base::add_member_control;
+
 	fvec<T, 2> r_range;
 	fvec<T, 2> z_range;
 	std::string get_type_name() const { return "tube"; }
@@ -16,7 +25,7 @@ public:
 			rh.reflect_member("R", r_range[1]) &&
 			rh.reflect_member("z", z_range[0]) &&
 			rh.reflect_member("Z", z_range[1]) &&
-			implicit_primitive<T>::self_reflect(rh);
+			base::self_reflect(rh);
 	}
 	T evaluate(const pnt_type& p) const {
 		T xy2 = sqr(p(0)) + sqr(p(1));
@@ -56,4 +65,4 @@ public:
 	}
 };
 
-scene_factory_registration<tube<double> >sfr_torus("tube");
+scene_factory_registration<tube<double> > sfr_tube("tube");

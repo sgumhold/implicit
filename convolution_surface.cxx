@@ -3,6 +3,18 @@
 template <typename T>
 class convolution_surface :  public distance_surface<T>
 {
+public:
+	/// main templated superclass which we want to inherit stuff from
+	typedef distance_surface<T> base;
+		using typename base::vec_type;
+		using typename base::pnt_type;
+		using base::r;
+		using base::points;
+		using base::edges;
+		using base::edge_vector;
+		using base::edge_vector_inv_length;
+		using base::evaluate_gradient;
+
 private:
 	/// v= shortest distance from line to p
 	T put_line_distance_vector(size_t ei, const pnt_type &p, vec_type& v) const
@@ -15,7 +27,7 @@ private:
 	/// updating edge_vector for segment [p[i],p[i+1]]
 	void update_edge_precomputations(size_t ei) 
 	{
-		distance_surface<T>::update_edge_precomputations(ei);
+		base::update_edge_precomputations(ei);
 		edge_length[ei]=edge_vector[ei].length();
 	}
 	/// precomputed helper variables
@@ -24,7 +36,7 @@ private:
 public:
 	/// standard constructor
 	convolution_surface() {
-		on_set(&r);
+		base::on_set(&r);
 	}
 	/// overload to return the type name of this object
 	std::string get_type_name() const { return "convolution_surface"; }
@@ -85,8 +97,8 @@ public:
 	}
 	void create_gui()
 	{
-		add_view("convolution surface",name)->set("color",0xFF8888);
-		gui_title_added = true;
+		base::add_view("convolution surface", base::name)->set("color",0xFF8888);
+		base::gui_title_added = true;
 		distance_surface<T>::create_gui();
 	}
 };

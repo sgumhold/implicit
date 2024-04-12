@@ -5,6 +5,15 @@
 template <typename T>
 class distance_surface :  public skeleton<T>
 {
+public:
+	/// main templated superclass which we want to inherit stuff from
+	typedef skeleton<T> base;
+		using typename base::vec_type;
+		using typename base::pnt_type;
+		using base::points;
+		using base::edges;
+		using base::add_member_control;
+
 protected:
 	// reference radius of distance surface
 	double r;

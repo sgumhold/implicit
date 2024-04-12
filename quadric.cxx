@@ -3,10 +3,18 @@
 template <typename T>
 struct quadric : public implicit_primitive<T>
 {
-	T a_xx, a_xy, a_xz, a_xw, 
-		     a_yy, a_yz, a_yw, 
-			        a_zz, a_zw, 
-					        a_ww;
+	/// main templated superclass which we want to inherit stuff from
+	typedef implicit_primitive<T> base;
+		using typename base::pnt_type;
+		using base::gui_color;
+		using base::add_member_control;
+
+
+	T a_xx, a_xy, a_xz, a_xw,
+	        a_yy, a_yz, a_yw,
+	              a_zz, a_zw,
+	                    a_ww;
+
 	quadric() {
 		a_xx = a_yy = a_zz = 1;
 		a_xy = a_xz = a_yz = a_xw = a_yw = a_zw = 0;

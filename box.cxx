@@ -3,6 +3,14 @@
 template <typename T>
 struct box : public implicit_primitive<T>
 {
+	/// main templated superclass which we want to inherit stuff from
+	typedef implicit_primitive<T> base;
+		using typename base::vec_type;
+		using typename base::pnt_type;
+		using base::gui_color;
+		using base::evaluate_gradient;
+		using base::add_member_control;
+
 	bool use_euclidean_distance;
 	box() : use_euclidean_distance(true) {}
 	std::string get_type_name() const { return "box"; }
@@ -21,7 +29,7 @@ struct box : public implicit_primitive<T>
 				return 2;
 		}
 	}
-	void on_set(void* member_ptr) { update_scene(); }
+	void on_set(void* member_ptr) { base::update_scene(); }
 	/// evaluate the implicit function itself, this must be overloaded
 	T evaluate(const pnt_type& p) const {
 		if (use_euclidean_distance) {
@@ -95,7 +103,7 @@ struct box : public implicit_primitive<T>
 	}
 	void create_gui()
 	{
-		implicit_primitive<T>::create_gui();
+		base::create_gui();
 		add_member_control(this, "use_euclidean_distance", use_euclidean_distance, "check");
 	}
 };

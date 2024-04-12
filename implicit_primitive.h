@@ -10,6 +10,12 @@ template <typename T>
 class implicit_primitive : public named, public implicit_base<T>
 {
 public:
+	/// main templated superclass which we want to inherit stuff from
+	typedef implicit_base<T> base;
+		using base::color;
+		using base::update_scene;
+		using base::update_member;
+
 	/// convert to cgv::base::base pointer
 	cgv::base::base* get_base() { return this; }
 	/// calls the update_scene method of scene_updater

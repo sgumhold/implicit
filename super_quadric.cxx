@@ -3,6 +3,14 @@
 template <typename T>
 struct super_quadric : public implicit_primitive<T>
 {
+	/// main templated superclass which we want to inherit stuff from
+	typedef implicit_primitive<T> base;
+		using typename base::vec_type;
+		using typename base::pnt_type;
+		using base::gui_color;
+		using base::evaluate_gradient;
+		using base::add_member_control;
+
 	/// the two parameters of the super quadric defining the norm
 	T p1, p2;
 	/// reciprocals of parameters
@@ -19,7 +27,7 @@ struct super_quadric : public implicit_primitive<T>
 		return
 			rh.reflect_member("p1", p1) &&
 			rh.reflect_member("p2", p2) &&
-			implicit_primitive<T>::self_reflect(rh);
+			base::self_reflect(rh);
 	}
 	/// ensure that reciprocals are computed and that scene is updated if parameters change
 	void on_set(void* member_ptr)
@@ -28,7 +36,7 @@ struct super_quadric : public implicit_primitive<T>
 			inv_p1 = (p1 < 1e-12) ? 1e12 : 1 / p1;
 		if (member_ptr == &p2)
 			inv_p2 = (p2 < 1e-12) ? 1e12 : 1 / p2;
-		implicit_primitive<T>::on_set(member_ptr);
+		base::on_set(member_ptr);
 	}
 	/// helper function
 	static T signum(const T& v)

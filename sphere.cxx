@@ -3,6 +3,14 @@
 template <typename T>
 struct sphere : public implicit_primitive<T>
 {
+	/// main templated superclass which we want to inherit stuff from
+	typedef implicit_primitive<T> base;
+		using typename base::vec_type;
+		using typename base::pnt_type;
+		using base::gui_color;
+		using base::evaluate_gradient;
+		using base::add_member_control;
+
 	bool use_euclidean_distance;
 	sphere() : use_euclidean_distance(true) 
 	{
@@ -28,7 +36,7 @@ struct sphere : public implicit_primitive<T>
 	}
 	void create_gui()
 	{
-		add_member_control(this, "use_euclidean_distance", use_euclidean_distance, "check");
+		base::add_member_control(this, "use_euclidean_distance", use_euclidean_distance, "check");
 	}
 };
 
