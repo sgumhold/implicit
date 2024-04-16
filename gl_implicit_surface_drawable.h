@@ -14,8 +14,9 @@ class gl_implicit_surface_drawable :
 	public cgv::render::gl::gl_implicit_surface_drawable_base
 {
 protected:
-	double map_to_zero_value;
-	double map_to_one_value;
+	double map_to_zero_value = -1;
+	double map_to_one_value = 1;
+	unsigned volume_resolution = 256;
 	cgv::render::view* view_ptr;
 	void toggle_range();
 	void adjust_range();

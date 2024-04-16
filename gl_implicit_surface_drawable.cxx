@@ -98,6 +98,7 @@ void gl_implicit_surface_drawable::export_volume()
 	std::ofstream os(hd_fn.c_str());
 	if (os.fail())
 		return;
+	unsigned res = volume_resolution;
 	os << "Size:      " << res << ", " << res << ", " << res << std::endl;
 	cgv::dvec3 scaling = box.get_extent(); // / dvec3(res, res, res);
 
@@ -325,11 +326,12 @@ void gl_implicit_surface_drawable::create_gui()
 
 	if (begin_tree_node("Volume Export", map_to_zero_value)) {
 		align("\a");
-		connect_copy(add_button("toggle range")->click, rebind(this, &gl_implicit_surface_drawable::toggle_range));
-		connect_copy(add_button("adjust range")->click, rebind(this, &gl_implicit_surface_drawable::adjust_range));
-		add_member_control(this, "map to zero", map_to_zero_value, "value_slider");
-		add_member_control(this, "map to one", map_to_one_value, "value_slider");
-		connect_copy(add_button("save to vox")->click, rebind(this, &gl_implicit_surface_drawable::export_volume));
+		connect_copy(add_button("Adjust Range")->click, rebind(this, &gl_implicit_surface_drawable::adjust_range));
+		add_member_control(this, "map to Zero", map_to_zero_value, "value_slider");
+		add_member_control(this, "map to One", map_to_one_value, "value_slider");
+		connect_copy(add_button("Toggle Range")->click, rebind(this, &gl_implicit_surface_drawable::toggle_range));
+		add_member_control(this, "Resolution", volume_resolution, "value_slider", "min=8;max=1024;log=true;ticks=true");
+		connect_copy(add_button("Save to VOX")->click, rebind(this, &gl_implicit_surface_drawable::export_volume));
 		end_tree_node(map_to_zero_value);
 		align("\b");
 	}
