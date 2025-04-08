@@ -582,7 +582,7 @@ std::string scene::get_type_name() const
 double scene::evaluate(const pnt_type& p) const
 {
 	if (func_base_ptr)
-		return func_base_ptr->get_interface<implicit_type>()->evaluate(implicit_type::pnt_type(p.size(),p));
+		return func_base_ptr->get_interface<implicit_type>()->evaluate(implicit_type::pnt_type(p.size(),p.data()));
 	return 0;
 }
 
@@ -590,7 +590,7 @@ double scene::evaluate(const pnt_type& p) const
 scene::vec_type scene::evaluate_gradient(const pnt_type& p) const
 {
 	if (func_base_ptr)
-		return func_base_ptr->get_interface<implicit_type>()->evaluate_gradient(implicit_type::pnt_type(p.size(),p)).to_vec();
+		return func_base_ptr->get_interface<implicit_type>()->evaluate_gradient(implicit_type::pnt_type(p.size(),p.data())).to_vec();
 	return vec_type(0, 0, 0);
 }
 

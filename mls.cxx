@@ -126,11 +126,11 @@ T mls_surface<T,P,C>::evaluate(const pnt_type& _p) const
 	P d = extent*h;
 	P dd = d*d;
 	P idd = 1.0f/dd;
-	int n = ann->annkFRSearch(p,9*dd,10000,idx_arr,dist_arr,0.01);
+	int n = ann->annkFRSearch(p.data(),9*dd,10000,idx_arr,dist_arr,0.01);
 	if (n==0){
 //		last_nml.set(1,0,0);
 //		return 3*d;
-		ann->annkSearch(p,1,idx_arr,dist_arr,0.01);
+		ann->annkSearch(p.data(),1,idx_arr,dist_arr,0.01);
 		P d1 = sqrt(dist_arr[0]);
 		P d2 = dot(p-points[idx_arr[0]],normals[idx_arr[0]]);
 		if (10*fabs(d2) > d1) {

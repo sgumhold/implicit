@@ -114,8 +114,8 @@ void skeleton<T>::draw(context& ctx)
 		for (size_t i = 0; i < edges.size(); ++i) {
 			if (edges[i].first >= points.size() || edges[i].second >= points.size())
 				continue;
-			glVertex3dv(points[edges[i].first]);
-			glVertex3dv(points[edges[i].second]);
+			glVertex3dv(points[edges[i].first].data());
+			glVertex3dv(points[edges[i].second].data());
 		}
 	glEnd();
 	glEnable(GL_LIGHTING);
